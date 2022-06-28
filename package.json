@@ -1,0 +1,24 @@
+{
+  "name": "quackatos",
+  "version": "0.1.0",
+  "description": "🦆 a query builder for Zapatos ",
+  "main": "index.js",
+  "repository": "git@github.com:seamapi/quackatos.git",
+  "author": "Max Isom <hi@maxisom.me>",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/pg": "8.6.5",
+    "ava": "4.3.0",
+    "ava-typescript-worker": "1.0.1",
+    "esbuild": "0.14.47",
+    "esbuild-register": "3.3.3",
+    "nanoid": "4.0.0",
+    "pg": "8.7.3",
+    "prettier": "2.7.1",
+    "testcontainers": "8.11.0"
+  },
+  "scripts": {
+    "test": "ava",
+    "format": "prettier -w ."
+  }
+}
