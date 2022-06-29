@@ -1,12 +1,13 @@
 import test from "ava";
 import { getTestDatabase } from ".";
+import * as db from "zapatos/db";
 
 test("getTestDatabase() works", async (t) => {
   const { pool } = await getTestDatabase();
 
   await t.notThrowsAsync(async () => {
-    const result = await pool.query("SELECT * FROM actor LIMIT 1");
+    const count = await db.count("actor", db.all).run(pool);
 
-    t.is(result.rows.length, 1);
+    t.snapshot(count);
   });
 });

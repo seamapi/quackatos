@@ -15,10 +15,16 @@
     "nanoid": "4.0.0",
     "pg": "8.7.3",
     "prettier": "2.7.1",
-    "testcontainers": "8.11.0"
+    "testcontainers": "8.11.0",
+    "typescript": "4.7.4",
+    "zapatos": "6.0.1"
   },
   "scripts": {
     "test": "ava",
+    "update-typings": "ava src/tests/fixtures/update-typings.ts",
     "format": "prettier -w ."
+  },
+  "peerDependencies": {
+    "zapatos": "^6.0.1"
   }
 }

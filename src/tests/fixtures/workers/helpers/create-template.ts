@@ -33,6 +33,17 @@ const createTemplate = async (container: StartedTestContainer) => {
     throw new Error(`Failed to load sample schema & data`);
   }
 
+  // Fix column names with spaces
+  // See https://github.com/jawj/zapatos/issues/122
+  await Promise.all([
+    createdDatabaseClient.query(
+      'ALTER VIEW "customer_list" RENAME COLUMN "zip code" TO "zip_code"'
+    ),
+    createdDatabaseClient.query(
+      'ALTER VIEW "staff_list" RENAME COLUMN "zip code" TO "zip_code"'
+    ),
+  ]);
+
   await createdDatabaseClient.end();
   await postgresClient.query(`ALTER DATABASE ${name} WITH is_template TRUE;`);
   await postgresClient.end();
