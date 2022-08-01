@@ -3,4 +3,5 @@ module.exports = {
   extensions: ["ts"],
   require: ["esbuild-register"],
   ignoredByWatcher: [".next"],
+  snapshotDir: "src/tests/snapshots",
 }
