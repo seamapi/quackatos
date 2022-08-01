@@ -21,7 +21,7 @@ export class UpdateCommand<
   private _values: Partial<Updatable> = {}
   private _returning: (keyof schema.SelectableForTable<TableName>)[] = []
 
-  constructor(tableName: string) {
+  constructor(tableName: TableName) {
     this._tableName = tableName
   }
 

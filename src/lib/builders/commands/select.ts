@@ -21,7 +21,7 @@ export class SelectCommand<
   private _limit?: number
   private _columnNames: (keyof Selectable)[] = []
 
-  constructor(tableName: string) {
+  constructor(tableName: TableName) {
     this._tableName = tableName
   }
 

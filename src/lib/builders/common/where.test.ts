@@ -1,5 +1,5 @@
 import test from "ava"
-import { getTestDatabase } from "~/tests/fixtures/plugins"
+import { getTestDatabase } from "~/tests"
 import { mix } from "ts-mixer"
 import * as schema from "zapatos/schema"
 import { sql } from "zapatos/db"

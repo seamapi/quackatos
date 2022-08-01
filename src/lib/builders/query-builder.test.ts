@@ -1,5 +1,5 @@
 import test from "ava"
-import { getTestDatabase } from "~/tests/fixtures/plugins"
+import { getTestDatabase } from "~/tests"
 import { QueryBuilder } from "./query-builder"
 
 test("select()", async (t) => {
