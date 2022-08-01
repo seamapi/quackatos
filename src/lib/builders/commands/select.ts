@@ -1,6 +1,6 @@
-import { WhereableStatement } from "./common/where"
+import { WhereableStatement } from "../common/where"
 import { sql, param, cols } from "zapatos/db"
-import { SQLCommand } from "./types"
+import { SQLCommand } from "../types"
 import { mix } from "ts-mixer"
 
 export interface SelectCommand<Selectable, Whereable>
@@ -17,13 +17,13 @@ export class SelectCommand<Selectable, Whereable> {
     this._tableName = tableName
   }
 
-  select<T extends (keyof Selectable)[]>(
+  columns<T extends (keyof Selectable)[]>(
     columns: T
   ): SelectCommand<Pick<Selectable, T[number]>, Whereable>
-  select<T extends (keyof Selectable)[]>(
+  columns<T extends (keyof Selectable)[]>(
     ...columns: T
   ): SelectCommand<Pick<Selectable, T[number]>, Whereable>
-  select<T extends (keyof Selectable)[]>(
+  columns<T extends (keyof Selectable)[]>(
     ...args: any
   ): SelectCommand<Pick<Selectable, T[number]>, Whereable> {
     if (args.length === 1 && Array.isArray(args[0])) {
@@ -40,10 +40,9 @@ export class SelectCommand<Selectable, Whereable> {
   }
 
   compile() {
+    const columnsSQL = this._columns.length > 0 ? cols(this._columns) : sql`*`
     const limitSQL = this._limit ? sql`LIMIT ${param(this._limit)}` : []
 
-    return sql`SELECT ${cols(this._columns)} FROM ${this._tableName} WHERE ${
-      this._whereable
-    } ${limitSQL}`.compile()
+    return sql`SELECT ${columnsSQL} FROM ${this._tableName} WHERE ${this._whereable} ${limitSQL}`.compile()
   }
 }

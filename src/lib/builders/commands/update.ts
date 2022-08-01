@@ -1,7 +1,7 @@
 import { cols, sql, vals } from "zapatos/db"
 import { mix } from "ts-mixer"
-import { WhereableStatement } from "./common/where"
-import { SQLCommand } from "./types"
+import { WhereableStatement } from "../common/where"
+import { SQLCommand } from "../types"
 
 export interface UpdateCommand<Updatable, Whereable>
   extends WhereableStatement<Whereable>,
