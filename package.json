@@ -26,5 +26,8 @@
   },
   "peerDependencies": {
     "zapatos": "^6.0.1"
+  },
+  "dependencies": {
+    "ts-mixer": "6.0.1"
   }
 }
