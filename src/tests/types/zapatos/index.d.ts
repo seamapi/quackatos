@@ -1,2 +1,2 @@
-import "./custom";
-import "./schema";
+import "./custom"
+import "./schema"

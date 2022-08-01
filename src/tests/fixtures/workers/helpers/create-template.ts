@@ -1,6 +1,6 @@
-import { StartedTestContainer } from "testcontainers";
-import { Client } from "pg";
-import getRandomDatabaseName from "./get-random-database-name";
+import { StartedTestContainer } from "testcontainers"
+import { Client } from "pg"
+import getRandomDatabaseName from "./get-random-database-name"
 
 /**
  * Creates a seeded database template.
@@ -8,29 +8,29 @@ import getRandomDatabaseName from "./get-random-database-name";
  * @returns name of created template
  */
 const createTemplate = async (container: StartedTestContainer) => {
-  const name = getRandomDatabaseName("template");
+  const name = getRandomDatabaseName("template")
 
   const postgresUrl = `postgresql://postgres:@${container.getHost()}:${container.getMappedPort(
     5432
-  )}/postgres`;
+  )}/postgres`
 
-  const postgresClient = new Client(postgresUrl);
-  await postgresClient.connect();
+  const postgresClient = new Client(postgresUrl)
+  await postgresClient.connect()
 
-  await postgresClient.query(`CREATE DATABASE ${name};`);
+  await postgresClient.query(`CREATE DATABASE ${name};`)
 
   const createdDatabaseUrl = `postgresql://postgres:@${container.getHost()}:${container.getMappedPort(
     5432
-  )}/${name}`;
+  )}/${name}`
 
-  const createdDatabaseClient = new Client(createdDatabaseUrl);
-  await createdDatabaseClient.connect();
+  const createdDatabaseClient = new Client(createdDatabaseUrl)
+  await createdDatabaseClient.connect()
 
   const { exitCode } = await container.exec(
     `psql -U postgres -d ${name} -f /pagila/dump.sql`.split(" ")
-  );
+  )
   if (exitCode !== 0) {
-    throw new Error(`Failed to load sample schema & data`);
+    throw new Error(`Failed to load sample schema & data`)
   }
 
   // Fix column names with spaces
@@ -42,13 +42,13 @@ const createTemplate = async (container: StartedTestContainer) => {
     createdDatabaseClient.query(
       'ALTER VIEW "staff_list" RENAME COLUMN "zip code" TO "zip_code"'
     ),
-  ]);
+  ])
 
-  await createdDatabaseClient.end();
-  await postgresClient.query(`ALTER DATABASE ${name} WITH is_template TRUE;`);
-  await postgresClient.end();
+  await createdDatabaseClient.end()
+  await postgresClient.query(`ALTER DATABASE ${name} WITH is_template TRUE;`)
+  await postgresClient.end()
 
-  return name;
-};
+  return name
+}
 
-export default createTemplate;
+export default createTemplate

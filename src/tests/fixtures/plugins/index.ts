@@ -1,1 +1,1 @@
-export * from "./get-test-database.plugin";
+export * from "./get-test-database.plugin"

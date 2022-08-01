@@ -1,13 +1,15 @@
-import { cols, sql, vals } from "zapatos/db";
-import {mix} from 'ts-mixer'
-import { WhereableStatement } from "./common/where";
-import { SQLCommand } from "./types";
+import { cols, sql, vals } from "zapatos/db"
+import { mix } from "ts-mixer"
+import { WhereableStatement } from "./common/where"
+import { SQLCommand } from "./types"
 
-export interface UpdateCommand<Updatable, Whereable> extends WhereableStatement<Whereable>, SQLCommand<void>  {}
+export interface UpdateCommand<Updatable, Whereable>
+  extends WhereableStatement<Whereable>,
+    SQLCommand<void> {}
 
 @mix(WhereableStatement, SQLCommand)
 export class UpdateCommand<Updatable, Whereable> {
-  private readonly _tableName: string;
+  private readonly _tableName: string
   private _values: Partial<Updatable> = {}
 
   constructor(tableName: string) {
@@ -21,7 +23,7 @@ export class UpdateCommand<Updatable, Whereable> {
       this._values[args[0] as keyof Updatable] = args[1]
     } else if (args.length === 1) {
       this._values = {
-        ...args[0]
+        ...args[0],
       }
     }
 
@@ -29,6 +31,8 @@ export class UpdateCommand<Updatable, Whereable> {
   }
 
   compile() {
-    return sql`UPDATE ${this._tableName} SET (${cols(this._values)}) = ROW(${vals(this._values)}) WHERE ${this._whereable}`.compile()
+    return sql`UPDATE ${this._tableName} SET (${cols(
+      this._values
+    )}) = ROW(${vals(this._values)}) WHERE ${this._whereable}`.compile()
   }
 }
