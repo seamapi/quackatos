@@ -12,6 +12,8 @@
     "ava-typescript-worker": "1.0.1",
     "esbuild": "0.14.47",
     "esbuild-register": "3.3.3",
+    "husky": "8.0.1",
+    "lint-staged": "13.0.3",
     "nanoid": "4.0.0",
     "pg": "8.7.3",
     "prettier": "2.7.1",
@@ -29,5 +31,8 @@
   },
   "dependencies": {
     "ts-mixer": "6.0.1"
+  },
+  "lint-staged": {
+    "*.{ts,css,md,js,mjs}": "prettier --write"
   }
 }
