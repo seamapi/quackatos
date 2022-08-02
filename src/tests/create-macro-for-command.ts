@@ -1,4 +1,5 @@
 import test, { ExecutionContext } from "ava"
+import { Pool } from "pg"
 import { SQLCommand } from "~/lib"
 import { getTestDatabase } from "./fixtures/plugins"
 
@@ -17,7 +18,11 @@ export const createMacroForBuilder = <Builder extends SQLCommand<any>>({
     async (
       t,
       callback: (builder: Builder) => SQLCommand<any>,
-      assertions?: (t: ExecutionContext, result: any) => void
+      assertions?: (
+        t: ExecutionContext,
+        result: any,
+        pool: Pool
+      ) => void | Promise<void>
     ) => {
       const { pool } = await getTestDatabase()
 
@@ -26,7 +31,7 @@ export const createMacroForBuilder = <Builder extends SQLCommand<any>>({
       const result = await builder.run(pool)
 
       if (assertions) {
-        assertions(t, result)
+        await assertions(t, result, pool)
       } else {
         t.snapshot(result)
       }

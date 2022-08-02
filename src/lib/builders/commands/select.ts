@@ -1,8 +1,13 @@
 import { WhereableStatement } from "../common/where"
-import { sql, param, cols } from "zapatos/db"
+import { sql, param } from "zapatos/db"
 import * as schema from "zapatos/schema"
-import { SQLCommand } from "../types"
 import { mix } from "ts-mixer"
+import { SQLCommand } from "../types"
+import {
+  ColumnSpecificationsForTable,
+  constructColumnSelection,
+  SelectableForTableFromColumnSpecifications,
+} from "./utils/construct-column-selection"
 
 export interface SelectCommand<
   TableName extends schema.Table,
@@ -19,27 +24,36 @@ export class SelectCommand<
 > {
   private readonly _tableName: string
   private _limit?: number
-  private _columnNames: (keyof Selectable)[] = []
+  private _columnSpecifications: ColumnSpecificationsForTable<TableName>[] = []
 
   constructor(tableName: TableName) {
     this._tableName = tableName
   }
 
-  columns<T extends (keyof Selectable)[]>(
-    columnNames: T
-  ): SelectCommand<TableName, Pick<Selectable, T[number]>, Whereable>
-  columns<T extends (keyof Selectable)[]>(
-    ...columnNames: T
-  ): SelectCommand<TableName, Pick<Selectable, T[number]>, Whereable>
-  columns<T extends (keyof Selectable)[]>(
+  select<T extends ColumnSpecificationsForTable<TableName>>(
+    columnSpecifications: T[]
+  ): SelectCommand<
+    TableName,
+    SelectableForTableFromColumnSpecifications<TableName, T>
+  >
+  select<T extends ColumnSpecificationsForTable<TableName>>(
+    ...columnNames: T[]
+  ): SelectCommand<
+    TableName,
+    SelectableForTableFromColumnSpecifications<TableName, T>
+  >
+  select<T extends ColumnSpecificationsForTable<TableName>>(
     ...args: any
-  ): SelectCommand<TableName, Pick<Selectable, T[number]>, Whereable> {
+  ): SelectCommand<
+    TableName,
+    SelectableForTableFromColumnSpecifications<TableName, T>
+  > {
     if (args.length === 1 && Array.isArray(args[0])) {
-      this._columnNames = args[0]
+      this._columnSpecifications = args[0]
     } else {
-      this._columnNames = args
+      this._columnSpecifications = args
     }
-    return this
+    return this as any
   }
 
   limit(limit: number) {
@@ -48,10 +62,10 @@ export class SelectCommand<
   }
 
   compile() {
-    const columnsSQL =
-      this._columnNames.length > 0 ? cols(this._columnNames) : sql`*`
     const limitSQL = this._limit ? sql`LIMIT ${param(this._limit)}` : []
 
-    return sql`SELECT ${columnsSQL} FROM ${this._tableName} WHERE ${this._whereable} ${limitSQL}`.compile()
+    return sql`SELECT ${constructColumnSelection(
+      this._columnSpecifications
+    )} FROM ${this._tableName} WHERE ${this._whereable} ${limitSQL}`.compile()
   }
 }
