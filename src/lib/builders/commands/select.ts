@@ -8,6 +8,7 @@ import {
   constructColumnSelection,
   SelectableForTableFromColumnSpecifications,
 } from "./utils/construct-column-selection"
+import { AnyJoin, constructJoinSQL } from "./utils/construct-join-sql"
 
 export interface SelectCommand<
   TableName extends schema.Table,
@@ -25,6 +26,7 @@ export class SelectCommand<
   private readonly _tableName: string
   private _limit?: number
   private _columnSpecifications: ColumnSpecificationsForTable<TableName>[] = []
+  private _joins: AnyJoin[] = []
 
   constructor(tableName: TableName) {
     this._tableName = tableName
@@ -56,6 +58,22 @@ export class SelectCommand<
     return this as any
   }
 
+  leftJoin<WithTableName extends schema.Table>(
+    withTableName: WithTableName,
+    column1: string,
+    column2: string
+  ): SelectCommand<
+    TableName | WithTableName,
+    Selectable & schema.SelectableForTable<WithTableName>
+  > {
+    this._joins.push({
+      type: "leftJoin",
+      table: withTableName,
+      on: sql`${column1} = ${column2}`,
+    })
+    return this as any
+  }
+
   limit(limit: number) {
     this._limit = limit
     return this
@@ -66,6 +84,8 @@ export class SelectCommand<
 
     return sql`SELECT ${constructColumnSelection(
       this._columnSpecifications
-    )} FROM ${this._tableName} WHERE ${this._whereable} ${limitSQL}`.compile()
+    )} FROM ${this._tableName} ${constructJoinSQL(this._joins)} WHERE ${
+      this._whereable
+    } ${limitSQL}`.compile()
   }
 }

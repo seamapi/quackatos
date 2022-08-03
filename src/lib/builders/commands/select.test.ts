@@ -88,3 +88,41 @@ test(
     t.is(numOfColumns, 14)
   }
 )
+
+test("leftJoin()", macro, (builder) =>
+  builder
+    .limit(1)
+    .leftJoin("film_actor", "film.film_id", "film_actor.film_id")
+    .leftJoin("actor", "film_actor.actor_id", "actor.actor_id")
+)
+
+test("leftJoin() (*, typed correctly)", async (t) => {
+  const { pool } = await getTestDatabase()
+  const result = await new SelectCommand("film")
+    .leftJoin("film_actor", "film.film_id", "film_actor.film_id")
+    .leftJoin("actor", "film_actor.actor_id", "actor.actor_id")
+    .select("*")
+    .run(pool)
+
+  assert<
+    Equals<
+      typeof result[0],
+      schema.film.Selectable &
+        schema.actor.Selectable &
+        schema.film_actor.Selectable
+    >
+  >()
+  t.pass()
+})
+
+test("leftJoin() (actor.*, typed correctly)", async (t) => {
+  const { pool } = await getTestDatabase()
+  const result = await new SelectCommand("film")
+    .leftJoin("film_actor", "film.film_id", "film_actor.film_id")
+    .leftJoin("actor", "film_actor.actor_id", "actor.actor_id")
+    .select("actor.*")
+    .run(pool)
+
+  assert<Equals<typeof result[0], schema.actor.Selectable>>()
+  t.pass()
+})
