@@ -1,6 +1,7 @@
 import test from "ava"
 import { assert, Equals } from "tsafe"
 import * as schema from "zapatos/schema"
+import { NullPartial } from "~/lib/util-types"
 import { createMacroForBuilder, getTestDatabase } from "~/tests"
 import { SelectCommand } from "./select"
 
@@ -108,8 +109,8 @@ test("leftJoin() (*, typed correctly)", async (t) => {
     Equals<
       typeof result[0],
       schema.film.Selectable &
-        schema.actor.Selectable &
-        schema.film_actor.Selectable
+        NullPartial<schema.film_actor.Selectable> &
+        NullPartial<schema.actor.Selectable>
     >
   >()
   t.pass()
@@ -123,6 +124,6 @@ test("leftJoin() (actor.*, typed correctly)", async (t) => {
     .select("actor.*")
     .run(pool)
 
-  assert<Equals<typeof result[0], schema.actor.Selectable>>()
+  assert<Equals<typeof result[0], NullPartial<schema.actor.Selectable>>>()
   t.pass()
 })

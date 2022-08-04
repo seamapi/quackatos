@@ -8,26 +8,31 @@ export type ColumnSpecificationsForTable<TableName extends Table> =
   | `${TableName}.*`
   | "*"
 
-export type SelectableForTableFromColumnSpecifications<
+// todo: this shouldn't be possible
+// type f = ColumnSpecificationsForTable<'film' | 'actor'>
+// type g = Extract<f, 'actor.description'>
+
+export type SelectableFromColumnSpecifications<
   DefaultTableName extends Table,
-  ColumnSpecifiers extends ColumnSpecificationsForTable<DefaultTableName>
+  ColumnSpecifiers extends ColumnSpecificationsForTable<DefaultTableName>,
+  OverriddenSelectableMap extends Record<DefaultTableName, any>
 > = UnionToIntersection<
   ColumnSpecifiers extends `${infer TableName}.*`
-    ? TableName extends Table
-      ? SelectableForTable<TableName>
+    ? TableName extends keyof OverriddenSelectableMap
+      ? OverriddenSelectableMap[TableName]
       : never
     : never | ColumnSpecifiers extends `${infer TableName}.${infer ColumnName}`
-    ? TableName extends Table
-      ? ColumnName extends keyof SelectableForTable<TableName>
-        ? Pick<SelectableForTable<TableName>, ColumnName>
+    ? TableName extends keyof OverriddenSelectableMap
+      ? ColumnName extends keyof OverriddenSelectableMap[TableName]
+        ? Pick<OverriddenSelectableMap[TableName], ColumnName>
         : never
       : never
     : never | ColumnSpecifiers extends "*"
-    ? SelectableForTable<DefaultTableName>
+    ? OverriddenSelectableMap[DefaultTableName]
     :
         | never
-        | ColumnSpecifiers extends keyof SelectableForTable<DefaultTableName>
-    ? Pick<SelectableForTable<DefaultTableName>, ColumnSpecifiers>
+        | ColumnSpecifiers extends keyof OverriddenSelectableMap[DefaultTableName]
+    ? Pick<OverriddenSelectableMap[DefaultTableName], ColumnSpecifiers>
     : never
 >
 

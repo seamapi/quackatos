@@ -6,13 +6,18 @@ import { SQLCommand } from "../types"
 import {
   ColumnSpecificationsForTable,
   constructColumnSelection,
-  SelectableForTableFromColumnSpecifications,
+  SelectableFromColumnSpecifications,
 } from "./utils/construct-column-selection"
 import { AnyJoin, constructJoinSQL } from "./utils/construct-join-sql"
+import { NullPartial } from "~/lib/util-types"
 
 export interface SelectCommand<
   TableName extends schema.Table,
   Selectable = schema.SelectableForTable<TableName>,
+  SelectableMap extends Record<TableName, any> = Record<
+    TableName,
+    schema.SelectableForTable<TableName>
+  >,
   Whereable = schema.WhereableForTable<TableName>
 > extends WhereableStatement<Whereable>,
     SQLCommand<Selectable> {}
@@ -21,6 +26,10 @@ export interface SelectCommand<
 export class SelectCommand<
   TableName extends schema.Table,
   Selectable = schema.SelectableForTable<TableName>,
+  SelectableMap extends Record<TableName, any> = Record<
+    TableName,
+    schema.SelectableForTable<TableName>
+  >,
   Whereable = schema.WhereableForTable<TableName>
 > {
   private readonly _tableName: string
@@ -29,6 +38,7 @@ export class SelectCommand<
   private _joins: AnyJoin[] = []
 
   constructor(tableName: TableName) {
+    type a = SelectableMap
     this._tableName = tableName
   }
 
@@ -36,19 +46,22 @@ export class SelectCommand<
     columnSpecifications: T[]
   ): SelectCommand<
     TableName,
-    SelectableForTableFromColumnSpecifications<TableName, T>
+    SelectableFromColumnSpecifications<TableName, T, SelectableMap>,
+    SelectableMap
   >
   select<T extends ColumnSpecificationsForTable<TableName>>(
     ...columnNames: T[]
   ): SelectCommand<
     TableName,
-    SelectableForTableFromColumnSpecifications<TableName, T>
+    SelectableFromColumnSpecifications<TableName, T, SelectableMap>,
+    SelectableMap
   >
   select<T extends ColumnSpecificationsForTable<TableName>>(
     ...args: any
   ): SelectCommand<
     TableName,
-    SelectableForTableFromColumnSpecifications<TableName, T>
+    SelectableFromColumnSpecifications<TableName, T, SelectableMap>,
+    SelectableMap
   > {
     if (args.length === 1 && Array.isArray(args[0])) {
       this._columnSpecifications = args[0]
@@ -64,7 +77,12 @@ export class SelectCommand<
     column2: string
   ): SelectCommand<
     TableName | WithTableName,
-    Selectable & schema.SelectableForTable<WithTableName>
+    Selectable,
+    SelectableMap &
+      Record<
+        WithTableName,
+        NullPartial<schema.SelectableForTable<WithTableName>>
+      >
   > {
     this._joins.push({
       type: "leftJoin",

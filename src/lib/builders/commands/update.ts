@@ -6,13 +6,17 @@ import { SQLCommand } from "../types"
 import {
   ColumnSpecificationsForTable,
   constructColumnSelection,
-  SelectableForTableFromColumnSpecifications,
+  SelectableFromColumnSpecifications,
 } from "./utils/construct-column-selection"
 
 export interface UpdateCommand<
   TableName extends schema.Table,
   Updatable = schema.UpdatableForTable<TableName>,
   Whereable = schema.WhereableForTable<TableName>,
+  SelectableMap extends Record<TableName, any> = Record<
+    TableName,
+    schema.SelectableForTable<TableName>
+  >,
   Returning = never
 > extends WhereableStatement<Whereable>,
     SQLCommand<Returning> {}
@@ -22,6 +26,10 @@ export class UpdateCommand<
   TableName extends schema.Table,
   Updatable = schema.UpdatableForTable<TableName>,
   Whereable = schema.WhereableForTable<TableName>,
+  SelectableMap extends Record<TableName, any> = Record<
+    TableName,
+    schema.SelectableForTable<TableName>
+  >,
   Returning = never
 > {
   private readonly _tableName: string
@@ -53,7 +61,8 @@ export class UpdateCommand<
     TableName,
     Updatable,
     Whereable,
-    SelectableForTableFromColumnSpecifications<TableName, T>
+    SelectableMap,
+    SelectableFromColumnSpecifications<TableName, T, SelectableMap>
   >
   returning<T extends ColumnSpecificationsForTable<TableName>>(
     ...columnNames: T[]
@@ -61,7 +70,8 @@ export class UpdateCommand<
     TableName,
     Updatable,
     Whereable,
-    SelectableForTableFromColumnSpecifications<TableName, T>
+    SelectableMap,
+    SelectableFromColumnSpecifications<TableName, T, SelectableMap>
   >
   returning<T extends ColumnSpecificationsForTable<TableName>>(
     ...args: any
@@ -69,7 +79,8 @@ export class UpdateCommand<
     TableName,
     Updatable,
     Whereable,
-    SelectableForTableFromColumnSpecifications<TableName, T>
+    SelectableMap,
+    SelectableFromColumnSpecifications<TableName, T, SelectableMap>
   > {
     if (args.length === 1 && Array.isArray(args[0])) {
       this._returning = args[0]
