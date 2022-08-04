@@ -25,6 +25,7 @@
   },
   "scripts": {
     "test": "ava",
+    "test:types": "tsc --noEmit",
     "update-typings": "ava src/tests/fixtures/update-typings.ts",
     "format": "prettier -w ."
   },
