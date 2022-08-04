@@ -32,6 +32,14 @@ test(
   }
 )
 
+test("set() (merges)", macro, (builder) =>
+  builder
+    .whereIn("film_id", [1])
+    .set("title", "foo")
+    .set({ description: "bar" })
+    .returning("title", "description")
+)
+
 test("returning() (array)", macro, (builder) =>
   builder.set({ title: "foo" }).whereIn("film_id", [1]).returning(["title"])
 )
