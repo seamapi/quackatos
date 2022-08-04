@@ -26,6 +26,10 @@ export type ColumnSpecificationsForTable<TableName extends Table> = Exclude<
   >
 >
 
+export type ColumnSpecificationsForTableWithoutWildcards<
+  TableName extends Table
+> = Exclude<ColumnSpecificationsForTable<TableName>, "*" | `${TableName}.*`>
+
 export type SelectableFromColumnSpecifications<
   DefaultTableName extends Table,
   ColumnSpecifiers extends ColumnSpecificationsForTable<DefaultTableName>,

@@ -5,6 +5,7 @@ import { mix } from "ts-mixer"
 import { SQLCommand } from "../types"
 import {
   ColumnSpecificationsForTable,
+  ColumnSpecificationsForTableWithoutWildcards,
   constructColumnSelection,
   SelectableFromColumnSpecifications,
 } from "./utils/construct-column-selection"
@@ -38,7 +39,6 @@ export class SelectCommand<
   private _joins: AnyJoin[] = []
 
   constructor(tableName: TableName) {
-    type a = SelectableMap
     this._tableName = tableName
   }
 
@@ -75,9 +75,12 @@ export class SelectCommand<
   // todo: should accept WhereableStatement
   leftJoin<WithTableName extends schema.Table>(
     withTableName: WithTableName,
-    // todo: type these properly
-    column1: string,
-    column2: string
+    column1: ColumnSpecificationsForTableWithoutWildcards<
+      TableName | WithTableName
+    >,
+    column2: ColumnSpecificationsForTableWithoutWildcards<
+      TableName | WithTableName
+    >
   ): SelectCommand<
     TableName | WithTableName,
     Selectable,
