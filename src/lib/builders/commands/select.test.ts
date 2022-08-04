@@ -1,5 +1,6 @@
 import test from "ava"
 import { assert, Equals } from "tsafe"
+import { Simplify } from "type-fest"
 import { sql } from "zapatos/db"
 import * as schema from "zapatos/schema"
 import { NullPartial } from "~/lib/util-types"
@@ -19,6 +20,23 @@ test("select() (typed correctly)", async (t) => {
   const result = await new SelectCommand("film")
     .limit(1)
     .select("title", "description")
+    .run(pool)
+
+  assert<
+    Equals<
+      typeof result[0],
+      Pick<schema.film.Selectable, "title" | "description">
+    >
+  >()
+  t.pass()
+})
+
+test("select() (merges)", async (t) => {
+  const { pool } = await getTestDatabase()
+  const result = await new SelectCommand("film")
+    .limit(1)
+    .select("title")
+    .select("description")
     .run(pool)
 
   assert<
@@ -116,8 +134,8 @@ test("leftJoin() (*, typed correctly)", async (t) => {
 
   assert<
     Equals<
-      typeof result[0],
-      schema.film.Selectable & NullPartial<schema.actor.Selectable>
+      Simplify<typeof result[0]>,
+      Simplify<schema.film.Selectable & NullPartial<schema.actor.Selectable>>
     >
   >()
   t.pass()
@@ -132,5 +150,24 @@ test("leftJoin() (actor.*, typed correctly)", async (t) => {
     .run(pool)
 
   assert<Equals<typeof result[0], NullPartial<schema.actor.Selectable>>>()
+  t.pass()
+})
+
+test("leftJoin() and select() (merges)", async (t) => {
+  const { pool } = await getTestDatabase()
+  const result = await new SelectCommand("film")
+    .limit(1)
+    .leftJoin("film_actor", "film.film_id", "film_actor.film_id")
+    .leftJoin("actor", "actor.actor_id", "film_actor.actor_id")
+    .select("actor.actor_id")
+    .select("actor.first_name")
+    .run(pool)
+
+  assert<
+    Equals<
+      typeof result[0],
+      Pick<NullPartial<schema.actor.Selectable>, "actor_id" | "first_name">
+    >
+  >()
   t.pass()
 })

@@ -15,6 +15,7 @@ import { NullPartial } from "~/lib/util-types"
 export interface SelectCommand<
   TableName extends schema.Table,
   Selectable = schema.SelectableForTable<TableName>,
+  HasMadeCustomSelection extends boolean = false,
   SelectableMap extends Record<TableName, any> = Record<
     TableName,
     schema.SelectableForTable<TableName>
@@ -27,6 +28,7 @@ export interface SelectCommand<
 export class SelectCommand<
   TableName extends schema.Table,
   Selectable = schema.SelectableForTable<TableName>,
+  HasMadeCustomSelection extends boolean = false,
   SelectableMap extends Record<TableName, any> = Record<
     TableName,
     schema.SelectableForTable<TableName>
@@ -43,24 +45,30 @@ export class SelectCommand<
   }
 
   select<T extends ColumnSpecificationsForTable<TableName>[]>(
-    columnSpecifications: T
-  ): SelectCommand<
-    TableName,
-    SelectableFromColumnSpecifications<TableName, T[number], SelectableMap>,
-    SelectableMap
-  >
-  select<T extends ColumnSpecificationsForTable<TableName>[]>(
     ...columnNames: T
   ): SelectCommand<
     TableName,
-    SelectableFromColumnSpecifications<TableName, T[number], SelectableMap>,
+    (HasMadeCustomSelection extends true ? Selectable : {}) &
+      SelectableFromColumnSpecifications<TableName, T[number], SelectableMap>,
+    true,
+    SelectableMap
+  >
+  select<T extends ColumnSpecificationsForTable<TableName>[]>(
+    columnSpecifications: T
+  ): SelectCommand<
+    TableName,
+    (HasMadeCustomSelection extends true ? Selectable : {}) &
+      SelectableFromColumnSpecifications<TableName, T[number], SelectableMap>,
+    true,
     SelectableMap
   >
   select<T extends ColumnSpecificationsForTable<TableName>[]>(
     ...args: any
   ): SelectCommand<
     TableName,
-    SelectableFromColumnSpecifications<TableName, T[number], SelectableMap>,
+    (HasMadeCustomSelection extends true ? Selectable : {}) &
+      SelectableFromColumnSpecifications<TableName, T[number], SelectableMap>,
+    true,
     SelectableMap
   > {
     if (args.length === 1 && Array.isArray(args[0])) {
@@ -74,6 +82,8 @@ export class SelectCommand<
   // todo: should accept WhereableStatement
   leftJoin<WithTableName extends schema.Table>(
     withTableName: WithTableName,
+    // todo: type should require one column to be from WithTableName
+    // todo: type should not allow the second column to be from the first column's table
     column1: ColumnSpecificationsForTableWithoutWildcards<
       TableName | WithTableName
     >,
@@ -83,6 +93,7 @@ export class SelectCommand<
   ): SelectCommand<
     TableName | WithTableName,
     Selectable,
+    false,
     SelectableMap &
       Record<
         WithTableName,
@@ -95,6 +106,7 @@ export class SelectCommand<
   ): SelectCommand<
     TableName | WithTableName,
     Selectable,
+    false,
     SelectableMap &
       Record<
         WithTableName,
@@ -106,6 +118,7 @@ export class SelectCommand<
   ): SelectCommand<
     TableName | WithTableName,
     Selectable,
+    false,
     SelectableMap &
       Record<
         WithTableName,
