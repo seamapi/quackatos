@@ -1,5 +1,6 @@
 import test from "ava"
 import { assert, Equals } from "tsafe"
+import { sql } from "zapatos/db"
 import * as schema from "zapatos/schema"
 import { NullPartial } from "~/lib/util-types"
 import { createMacroForBuilder, getTestDatabase } from "~/tests"
@@ -97,20 +98,26 @@ test("leftJoin()", macro, (builder) =>
     .leftJoin("actor", "film_actor.actor_id", "actor.actor_id")
 )
 
+test("leftJoin() (with arbitrary condition)", macro, (builder) =>
+  builder
+    .limit(1)
+    .leftJoin("film_actor", sql`${"film_actor.actor_id"} > ${"film.film_id"}`)
+    .leftJoin("actor", "film_actor.actor_id", "actor.actor_id")
+    .select("actor.actor_id", "film.film_id")
+)
+
 test("leftJoin() (*, typed correctly)", async (t) => {
   const { pool } = await getTestDatabase()
   const result = await new SelectCommand("film")
     .leftJoin("film_actor", "film.film_id", "film_actor.film_id")
     .leftJoin("actor", "film_actor.actor_id", "actor.actor_id")
-    .select("*")
+    .select("actor.*", "film.*")
     .run(pool)
 
   assert<
     Equals<
       typeof result[0],
-      schema.film.Selectable &
-        NullPartial<schema.film_actor.Selectable> &
-        NullPartial<schema.actor.Selectable>
+      schema.film.Selectable & NullPartial<schema.actor.Selectable>
     >
   >()
   t.pass()

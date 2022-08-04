@@ -1,5 +1,5 @@
 import { WhereableStatement } from "../common/where"
-import { sql, param } from "zapatos/db"
+import { sql, param, SQLFragment } from "zapatos/db"
 import * as schema from "zapatos/schema"
 import { mix } from "ts-mixer"
 import { SQLCommand } from "../types"
@@ -42,6 +42,7 @@ export class SelectCommand<
     this._tableName = tableName
   }
 
+  // todo: "film.*", "film.des..." doesn't autocomplete
   select<T extends ColumnSpecificationsForTable<TableName>>(
     columnSpecifications: T[]
   ): SelectCommand<
@@ -71,8 +72,10 @@ export class SelectCommand<
     return this as any
   }
 
+  // todo: should accept WhereableStatement
   leftJoin<WithTableName extends schema.Table>(
     withTableName: WithTableName,
+    // todo: type these properly
     column1: string,
     column2: string
   ): SelectCommand<
@@ -83,12 +86,47 @@ export class SelectCommand<
         WithTableName,
         NullPartial<schema.SelectableForTable<WithTableName>>
       >
+  >
+  leftJoin<WithTableName extends schema.Table>(
+    withTableName: WithTableName,
+    condition: SQLFragment
+  ): SelectCommand<
+    TableName | WithTableName,
+    Selectable,
+    SelectableMap &
+      Record<
+        WithTableName,
+        NullPartial<schema.SelectableForTable<WithTableName>>
+      >
+  >
+  leftJoin<WithTableName extends schema.Table>(
+    ...args: any
+  ): SelectCommand<
+    TableName | WithTableName,
+    Selectable,
+    SelectableMap &
+      Record<
+        WithTableName,
+        NullPartial<schema.SelectableForTable<WithTableName>>
+      >
   > {
-    this._joins.push({
-      type: "leftJoin",
-      table: withTableName,
-      on: sql`${column1} = ${column2}`,
-    })
+    if (args.length === 3) {
+      const [withTableName, column1, column2] = args
+
+      this._joins.push({
+        type: "leftJoin",
+        table: withTableName,
+        on: sql`${column1} = ${column2}`,
+      })
+    } else if (args.length === 2) {
+      const [withTableName, condition] = args
+      this._joins.push({
+        type: "leftJoin",
+        table: withTableName,
+        on: condition,
+      })
+    }
+
     return this as any
   }
 
