@@ -1,16 +1,30 @@
 import { ColumnForTable, SelectableForTable, Table } from "zapatos/schema"
 import { sql, raw } from "zapatos/db"
 import { UnionToIntersection } from "type-fest"
+import { CommonKeysInInterface } from "~/lib/util-types"
 
-export type ColumnSpecificationsForTable<TableName extends Table> =
+type ColumnSpecificationsForSingleTable<TableName extends Table> =
   | keyof SelectableForTable<TableName>
   | `${TableName}.${ColumnForTable<TableName>}`
   | `${TableName}.*`
   | "*"
 
-// todo: this shouldn't be possible
-// type f = ColumnSpecificationsForTable<'film' | 'actor'>
-// type g = Extract<f, 'actor.description'>
+type ColumnSpecificationsForTableUnion<TableName extends Table> = {
+  [K in TableName]: ColumnSpecificationsForSingleTable<K>
+}
+
+type CommonColumnsInTableUnion<TableName extends Table> =
+  CommonKeysInInterface<{
+    [K in TableName]: keyof SelectableForTable<K>
+  }>
+
+export type ColumnSpecificationsForTable<TableName extends Table> = Exclude<
+  ColumnSpecificationsForTableUnion<TableName>[TableName],
+  Extract<
+    ColumnSpecificationsForTableUnion<TableName>[TableName],
+    CommonColumnsInTableUnion<TableName>
+  >
+>
 
 export type SelectableFromColumnSpecifications<
   DefaultTableName extends Table,
