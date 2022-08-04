@@ -17,7 +17,7 @@ export interface UpdateCommand<
     TableName,
     schema.SelectableForTable<TableName>
   >,
-  Returning = never
+  Returning = {}
 > extends WhereableStatement<Whereable>,
     SQLCommand<Returning> {}
 
@@ -30,7 +30,7 @@ export class UpdateCommand<
     TableName,
     schema.SelectableForTable<TableName>
   >,
-  Returning = never
+  Returning = {}
 > {
   private readonly _tableName: string
   private _values: Partial<Updatable> = {}
@@ -56,22 +56,24 @@ export class UpdateCommand<
   }
 
   returning<T extends ColumnSpecificationsForTable<TableName>[]>(
-    columnSpecifications: T
-  ): UpdateCommand<
-    TableName,
-    Updatable,
-    Whereable,
-    SelectableMap,
-    SelectableFromColumnSpecifications<TableName, T[number], SelectableMap>
-  >
-  returning<T extends ColumnSpecificationsForTable<TableName>[]>(
     ...columnNames: T
   ): UpdateCommand<
     TableName,
     Updatable,
     Whereable,
     SelectableMap,
-    SelectableFromColumnSpecifications<TableName, T[number], SelectableMap>
+    Returning &
+      SelectableFromColumnSpecifications<TableName, T[number], SelectableMap>
+  >
+  returning<T extends ColumnSpecificationsForTable<TableName>[]>(
+    columnSpecifications: T
+  ): UpdateCommand<
+    TableName,
+    Updatable,
+    Whereable,
+    SelectableMap,
+    Returning &
+      SelectableFromColumnSpecifications<TableName, T[number], SelectableMap>
   >
   returning<T extends ColumnSpecificationsForTable<TableName>[]>(
     ...args: any
@@ -80,12 +82,13 @@ export class UpdateCommand<
     Updatable,
     Whereable,
     SelectableMap,
-    SelectableFromColumnSpecifications<TableName, T[number], SelectableMap>
+    Returning &
+      SelectableFromColumnSpecifications<TableName, T[number], SelectableMap>
   > {
     if (args.length === 1 && Array.isArray(args[0])) {
-      this._returning = args[0]
+      this._returning = [...this._returning, ...args[0]]
     } else {
-      this._returning = args
+      this._returning = [...this._returning, ...args]
     }
     return this as any
   }

@@ -78,3 +78,17 @@ test("returning() (two columns, typed correctly)", async (t) => {
   >()
   t.pass()
 })
+
+test("returning() (merges, typed correctly)", async (t) => {
+  const { pool } = await getTestDatabase()
+  const result = await new UpdateCommand("film")
+    .set({ title: "foo" })
+    .returning("film_id")
+    .returning("title")
+    .run(pool)
+
+  assert<
+    Equals<typeof result[0], Pick<schema.film.Selectable, "film_id" | "title">>
+  >()
+  t.pass()
+})
