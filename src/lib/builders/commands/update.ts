@@ -55,32 +55,32 @@ export class UpdateCommand<
     return this
   }
 
-  returning<T extends ColumnSpecificationsForTable<TableName>>(
-    columnSpecifications: T[]
+  returning<T extends ColumnSpecificationsForTable<TableName>[]>(
+    columnSpecifications: T
   ): UpdateCommand<
     TableName,
     Updatable,
     Whereable,
     SelectableMap,
-    SelectableFromColumnSpecifications<TableName, T, SelectableMap>
+    SelectableFromColumnSpecifications<TableName, T[number], SelectableMap>
   >
-  returning<T extends ColumnSpecificationsForTable<TableName>>(
-    ...columnNames: T[]
+  returning<T extends ColumnSpecificationsForTable<TableName>[]>(
+    ...columnNames: T
   ): UpdateCommand<
     TableName,
     Updatable,
     Whereable,
     SelectableMap,
-    SelectableFromColumnSpecifications<TableName, T, SelectableMap>
+    SelectableFromColumnSpecifications<TableName, T[number], SelectableMap>
   >
-  returning<T extends ColumnSpecificationsForTable<TableName>>(
+  returning<T extends ColumnSpecificationsForTable<TableName>[]>(
     ...args: any
   ): UpdateCommand<
     TableName,
     Updatable,
     Whereable,
     SelectableMap,
-    SelectableFromColumnSpecifications<TableName, T, SelectableMap>
+    SelectableFromColumnSpecifications<TableName, T[number], SelectableMap>
   > {
     if (args.length === 1 && Array.isArray(args[0])) {
       this._returning = args[0]

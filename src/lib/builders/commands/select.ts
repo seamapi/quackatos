@@ -42,26 +42,25 @@ export class SelectCommand<
     this._tableName = tableName
   }
 
-  // todo: "film.*", "film.des..." doesn't autocomplete
-  select<T extends ColumnSpecificationsForTable<TableName>>(
-    columnSpecifications: T[]
+  select<T extends ColumnSpecificationsForTable<TableName>[]>(
+    columnSpecifications: T
   ): SelectCommand<
     TableName,
-    SelectableFromColumnSpecifications<TableName, T, SelectableMap>,
+    SelectableFromColumnSpecifications<TableName, T[number], SelectableMap>,
     SelectableMap
   >
-  select<T extends ColumnSpecificationsForTable<TableName>>(
-    ...columnNames: T[]
+  select<T extends ColumnSpecificationsForTable<TableName>[]>(
+    ...columnNames: T
   ): SelectCommand<
     TableName,
-    SelectableFromColumnSpecifications<TableName, T, SelectableMap>,
+    SelectableFromColumnSpecifications<TableName, T[number], SelectableMap>,
     SelectableMap
   >
-  select<T extends ColumnSpecificationsForTable<TableName>>(
+  select<T extends ColumnSpecificationsForTable<TableName>[]>(
     ...args: any
   ): SelectCommand<
     TableName,
-    SelectableFromColumnSpecifications<TableName, T, SelectableMap>,
+    SelectableFromColumnSpecifications<TableName, T[number], SelectableMap>,
     SelectableMap
   > {
     if (args.length === 1 && Array.isArray(args[0])) {
