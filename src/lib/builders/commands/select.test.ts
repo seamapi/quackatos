@@ -171,3 +171,13 @@ test("leftJoin() and select() (merges)", async (t) => {
   >()
   t.pass()
 })
+
+test("count()", macro, (builder) => builder.count())
+
+test("count() (typed correctly)", async (t) => {
+  const { pool } = await getTestDatabase()
+  const result = await new SelectCommand("film").count().run(pool)
+
+  assert<Equals<typeof result, number>>()
+  t.pass()
+})

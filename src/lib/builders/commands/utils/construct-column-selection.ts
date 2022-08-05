@@ -67,7 +67,7 @@ export const constructColumnSelection = <TableName extends Table>(
   const columnsSQL =
     wildcardColumnsSQL.length > 0 || specificColumnsSQL.length > 0
       ? sql`${raw([...wildcardColumnsSQL, ...specificColumnsSQL].join(", "))}`
-      : sql`*`
+      : sql``
 
   return columnsSQL
 }

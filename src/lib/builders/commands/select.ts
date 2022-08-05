@@ -11,10 +11,20 @@ import {
 } from "./utils/construct-column-selection"
 import { AnyJoin, constructJoinSQL } from "./utils/construct-join-sql"
 import { NullPartial } from "~/lib/util-types"
+import { mapWithSeparator } from "./utils/map-with-separator"
+import { QueryResult } from "pg"
+
+type SelectResultMode = "MANY" | "NUMERIC"
+
+type ReturnTypeForModeMap<Selectable> = {
+  MANY: Selectable[]
+  NUMERIC: number
+}
 
 export interface SelectCommand<
   TableName extends schema.Table,
   Selectable = schema.SelectableForTable<TableName>,
+  ResultMode extends SelectResultMode = "MANY",
   HasMadeCustomSelection extends boolean = false,
   SelectableMap extends Record<TableName, any> = Record<
     TableName,
@@ -22,12 +32,13 @@ export interface SelectCommand<
   >,
   Whereable = schema.WhereableForTable<TableName>
 > extends WhereableStatement<Whereable>,
-    SQLCommand<Selectable> {}
+    SQLCommand<ReturnTypeForModeMap<Selectable>[ResultMode]> {}
 
 @mix(WhereableStatement, SQLCommand)
 export class SelectCommand<
   TableName extends schema.Table,
   Selectable = schema.SelectableForTable<TableName>,
+  ResultMode extends SelectResultMode = "MANY",
   HasMadeCustomSelection extends boolean = false,
   SelectableMap extends Record<TableName, any> = Record<
     TableName,
@@ -37,8 +48,12 @@ export class SelectCommand<
 > {
   private readonly _tableName: string
   private _limit?: number
-  private _columnSpecifications: ColumnSpecificationsForTable<TableName>[] = []
+  private _columnSpecifications: (
+    | ColumnSpecificationsForTable<TableName>
+    | SQLFragment
+  )[] = []
   private _joins: AnyJoin[] = []
+  private _resultMode: SelectResultMode = "MANY"
 
   constructor(tableName: TableName) {
     this._tableName = tableName
@@ -50,6 +65,7 @@ export class SelectCommand<
     TableName,
     (HasMadeCustomSelection extends true ? Selectable : {}) &
       SelectableFromColumnSpecifications<TableName, T[number], SelectableMap>,
+    ResultMode,
     true,
     SelectableMap
   >
@@ -59,6 +75,7 @@ export class SelectCommand<
     TableName,
     (HasMadeCustomSelection extends true ? Selectable : {}) &
       SelectableFromColumnSpecifications<TableName, T[number], SelectableMap>,
+    ResultMode,
     true,
     SelectableMap
   >
@@ -68,6 +85,7 @@ export class SelectCommand<
     TableName,
     (HasMadeCustomSelection extends true ? Selectable : {}) &
       SelectableFromColumnSpecifications<TableName, T[number], SelectableMap>,
+    ResultMode,
     true,
     SelectableMap
   > {
@@ -76,6 +94,13 @@ export class SelectCommand<
     } else {
       this._columnSpecifications = args
     }
+    return this as any
+  }
+
+  count(): SelectCommand<TableName, Selectable, "NUMERIC"> {
+    this._columnSpecifications.push(sql`COUNT(*)`)
+    this._resultMode = "NUMERIC"
+
     return this as any
   }
 
@@ -93,6 +118,7 @@ export class SelectCommand<
   ): SelectCommand<
     TableName | WithTableName,
     Selectable,
+    ResultMode,
     false,
     SelectableMap &
       Record<
@@ -106,6 +132,7 @@ export class SelectCommand<
   ): SelectCommand<
     TableName | WithTableName,
     Selectable,
+    ResultMode,
     false,
     SelectableMap &
       Record<
@@ -118,6 +145,7 @@ export class SelectCommand<
   ): SelectCommand<
     TableName | WithTableName,
     Selectable,
+    ResultMode,
     false,
     SelectableMap &
       Record<
@@ -153,10 +181,39 @@ export class SelectCommand<
   compile() {
     const limitSQL = this._limit ? sql`LIMIT ${param(this._limit)}` : []
 
-    return sql`SELECT ${constructColumnSelection(
-      this._columnSpecifications
-    )} FROM ${this._tableName} ${constructJoinSQL(this._joins)} WHERE ${
-      this._whereable
-    } ${limitSQL}`.compile()
+    const stringColumnSpecifications = this._columnSpecifications.filter(
+      (spec) => typeof spec === "string"
+    ) as ColumnSpecificationsForTable<TableName>[]
+    const sqlColumnSpecifications = this._columnSpecifications.filter(
+      (spec) => typeof spec !== "string"
+    ) as SQLFragment[]
+
+    let columnsSQL =
+      stringColumnSpecifications.length > 0 ||
+      sqlColumnSpecifications.length > 0
+        ? mapWithSeparator(
+            [
+              ...(stringColumnSpecifications.length > 0
+                ? [constructColumnSelection(stringColumnSpecifications)]
+                : []),
+              ...sqlColumnSpecifications,
+            ],
+            sql`, `,
+            (v) => v
+          )
+        : sql`*`
+
+    return sql`SELECT ${columnsSQL} FROM ${this._tableName} ${constructJoinSQL(
+      this._joins
+    )} WHERE ${this._whereable} ${limitSQL}`.compile()
+  }
+
+  protected transformResult(result: QueryResult): any {
+    switch (this._resultMode) {
+      case "MANY":
+        return result.rows
+      case "NUMERIC":
+        return parseInt(result.rows[0].count, 10)
+    }
   }
 }
