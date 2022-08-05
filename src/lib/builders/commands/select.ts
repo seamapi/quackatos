@@ -59,6 +59,7 @@ export class SelectCommand<
     this._tableName = tableName
   }
 
+  // todo: don't allow further select()s after an aggregate call like count()
   select<T extends ColumnSpecificationsForTable<TableName>[]>(
     ...columnNames: T
   ): SelectCommand<
