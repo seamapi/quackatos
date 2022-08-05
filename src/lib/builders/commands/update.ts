@@ -19,7 +19,7 @@ export interface UpdateCommand<
   >,
   Returning = {}
 > extends WhereableStatement<Whereable>,
-    SQLCommand<Returning> {}
+    SQLCommand<Returning[]> {}
 
 @mix(WhereableStatement, SQLCommand)
 export class UpdateCommand<

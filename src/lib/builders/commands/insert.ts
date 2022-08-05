@@ -1,16 +1,18 @@
+import { mix } from "ts-mixer"
 import { cols, sql, vals } from "zapatos/db"
 import * as schema from "zapatos/schema"
 import { SQLCommand } from "../types"
 import { mapWithSeparator } from "./utils/map-with-separator"
 
-export class InsertCommand<
-  TableName extends schema.Table
-> extends SQLCommand<never> {
+export interface InsertCommand<TableName extends schema.Table>
+  extends SQLCommand<never> {}
+
+@mix(SQLCommand)
+export class InsertCommand<TableName extends schema.Table> {
   private readonly _tableName: string
   private _rows: Array<schema.InsertableForTable<TableName>> = []
 
   constructor(tableName: TableName) {
-    super()
     this._tableName = tableName
   }
 

@@ -17,7 +17,7 @@ test("delete works", async (t) => {
     .whereIn("film_id", [1, 2, 3])
     .run(pool)
 
-  assert<Equals<typeof result, Array<never>>>()
+  assert<Equals<typeof result, never>>()
 
   const {
     rows: [{ count: countAfterDelete }],

@@ -23,7 +23,7 @@ test("insert works", async (t) => {
     )
     .run(pool)
 
-  assert<Equals<typeof result, Array<never>>>()
+  assert<Equals<typeof result, never>>()
 
   const {
     rows: [{ count: countAfterInsert }],
