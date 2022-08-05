@@ -27,7 +27,8 @@
     "test": "ava",
     "test:types": "tsc --noEmit",
     "update-typings": "ava src/tests/fixtures/update-typings.ts",
-    "format": "prettier -w ."
+    "format": "prettier -w .",
+    "format:check": "prettier --check ."
   },
   "peerDependencies": {
     "zapatos": "^6.0.1"
