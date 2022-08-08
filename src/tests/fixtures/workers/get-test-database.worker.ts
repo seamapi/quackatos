@@ -51,10 +51,13 @@ const getTestDatabase = async (protocol: SharedWorker.Protocol<any>) => {
       `CREATE DATABASE ${databaseName} TEMPLATE ${templateName};`
     )
 
-    await postgresClient.end()
-
     message.reply({
       externalDatabaseUrl,
+    })
+
+    message.testWorker.teardown(async () => {
+      await postgresClient.query(`DROP DATABASE ${databaseName};`)
+      await postgresClient.end()
     })
   }
 }
