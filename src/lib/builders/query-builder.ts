@@ -1,12 +1,4 @@
 import * as schema from "zapatos/schema"
-import { SelectCommand, UpdateCommand } from "./commands"
+import { SelectCommand } from "./commands"
 
-export class QueryBuilder {
-  select<T extends schema.Table>(tableName: T) {
-    return new SelectCommand<T>(tableName)
-  }
-
-  update<T extends schema.Table>(tableName: T) {
-    return new UpdateCommand<T>(tableName)
-  }
-}
+export class QueryBuilder<T extends schema.Table> extends SelectCommand<T> {}

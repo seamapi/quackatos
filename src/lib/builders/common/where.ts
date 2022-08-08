@@ -13,19 +13,26 @@ export class WhereableStatement<Whereable extends W> {
   }
 
   where(
-    callback: (
-      builder: WhereableStatement<Whereable>
-    ) => WhereableStatement<Whereable>
+    args:
+      | ((
+          builder: WhereableStatement<Whereable>
+        ) => WhereableStatement<Whereable>)
+      | Whereable
   ): this {
     const builder = new WhereableStatement<Whereable>()
-    const configured = callback(builder)
-    return this.mergeIntoThis(configured)
+
+    if (typeof args == "function") {
+      const configured = args(builder)
+      return this.mergeIntoThis(configured._whereable)
+    }
+
+    return this.mergeIntoThis(args)
   }
 
-  private mergeIntoThis(newBuilder: WhereableStatement<Whereable>): this {
+  private mergeIntoThis(whereable: Whereable): this {
     this._whereable = {
       ...this._whereable,
-      ...newBuilder._whereable,
+      ...whereable,
     }
     return this
   }
