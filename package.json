@@ -17,6 +17,7 @@
     "nanoid": "4.0.0",
     "pg": "8.7.3",
     "prettier": "2.7.1",
+    "semantic-release": "19.0.3",
     "testcontainers": "8.11.0",
     "tsafe": "0.10.1",
     "type-fest": "2.18.0",
