@@ -1,8 +1,19 @@
 {
   "name": "quackatos",
   "version": "0.1.0",
-  "description": "🦆 a query builder for Zapatos ",
-  "main": "index.js",
+  "description": "🦆 a query builder for Zapatos",
+  "keywords": [
+    "query",
+    "builder",
+    "zapatos",
+    "postgres",
+    "sql"
+  ],
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
   "repository": "git@github.com:seamapi/quackatos.git",
   "author": "Max Isom <hi@maxisom.me>",
   "license": "MIT",
@@ -17,8 +28,10 @@
     "nanoid": "4.0.0",
     "pg": "8.7.3",
     "prettier": "2.7.1",
+    "semantic-release": "19.0.3",
     "testcontainers": "8.11.0",
     "tsafe": "0.10.1",
+    "tsup": "6.2.1",
     "type-fest": "2.18.0",
     "typescript": "4.7.4",
     "zapatos": "6.0.1"
@@ -28,7 +41,8 @@
     "test:types": "tsc --noEmit",
     "update-typings": "ava src/tests/fixtures/update-typings.ts",
     "format": "prettier -w .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "build": "tsup ./src/index.ts --dts --sourcemap "
   },
   "peerDependencies": {
     "zapatos": "^6.0.1"
@@ -37,6 +51,6 @@
     "ts-mixer": "6.0.1"
   },
   "lint-staged": {
-    "*.{ts,css,md,js,mjs}": "prettier --write"
+    "*.{ts,css,md,js,mjs,json}": "prettier --write"
   }
 }
