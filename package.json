@@ -18,6 +18,11 @@
   "author": "Max Isom <hi@maxisom.me>",
   "license": "MIT",
   "devDependencies": {
+    "@semantic-release/commit-analyzer": "9.0.2",
+    "@semantic-release/git": "10.0.1",
+    "@semantic-release/github": "8.0.5",
+    "@semantic-release/npm": "9.0.1",
+    "@semantic-release/release-notes-generator": "10.0.3",
     "@types/pg": "8.6.5",
     "ava": "4.3.0",
     "ava-typescript-worker": "1.0.1",
