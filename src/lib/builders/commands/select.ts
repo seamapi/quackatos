@@ -13,6 +13,8 @@ import { AnyJoin, constructJoinSQL } from "./utils/construct-join-sql"
 import { NullPartial } from "~/lib/util-types"
 import { mapWithSeparator } from "./utils/map-with-separator"
 import { QueryResult } from "pg"
+import { UpdateCommand } from "./update"
+import { DeleteCommand } from "./delete"
 
 type SelectResultMode = "MANY" | "NUMERIC"
 
@@ -46,7 +48,7 @@ export class SelectCommand<
   >,
   Whereable = schema.WhereableForTable<TableName>
 > {
-  private readonly _tableName: string
+  private readonly _tableName: TableName
   private _limit?: number
   private _columnSpecifications: (
     | ColumnSpecificationsForTable<TableName>
@@ -174,6 +176,14 @@ export class SelectCommand<
   limit(limit: number) {
     this._limit = limit
     return this
+  }
+
+  delete() {
+    return new DeleteCommand<TableName>(this._tableName).where(this._whereable)
+  }
+
+  update() {
+    return new UpdateCommand<TableName>(this._tableName).where(this._whereable)
   }
 
   compile() {

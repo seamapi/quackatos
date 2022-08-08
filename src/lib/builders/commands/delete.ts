@@ -13,7 +13,7 @@ export interface DeleteCommand<
 @mix(WhereableStatement, SQLCommand)
 export class DeleteCommand<
   TableName extends schema.Table,
-  Whereable extends schema.WhereableForTable<TableName>
+  Whereable extends schema.WhereableForTable<TableName> = schema.WhereableForTable<TableName>
 > {
   private readonly _tableName: string
 

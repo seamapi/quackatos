@@ -1,5 +1,6 @@
+import { Table } from "zapatos/schema"
 import { QueryBuilder } from "./lib"
 
-const q = new QueryBuilder()
+const q = <T extends Table>(tableName: T) => new QueryBuilder(tableName)
 
 export default q
