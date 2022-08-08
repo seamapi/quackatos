@@ -59,7 +59,6 @@ export class SelectCommand<
     this._tableName = tableName
   }
 
-  // todo: don't allow further select()s after an aggregate call like count()
   select<T extends ColumnSpecificationsForTable<TableName>[]>(
     ...columnNames: T
   ): SelectCommand<
@@ -108,8 +107,6 @@ export class SelectCommand<
   // todo: should accept WhereableStatement
   leftJoin<WithTableName extends schema.Table>(
     withTableName: WithTableName,
-    // todo: type should require one column to be from WithTableName
-    // todo: type should not allow the second column to be from the first column's table
     column1: ColumnSpecificationsForTableWithoutWildcards<
       TableName | WithTableName
     >,

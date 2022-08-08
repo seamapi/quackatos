@@ -21,7 +21,6 @@ export class DeleteCommand<
     this._tableName = tableName
   }
 
-  // todo: don't allow running if _whereable is empty
   compile() {
     return sql`DELETE FROM ${this._tableName} WHERE ${this._whereable}`.compile()
   }

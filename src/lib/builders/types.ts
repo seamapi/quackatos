@@ -17,7 +17,6 @@ export abstract class SQLCommand<Result> {
 
       return result.rows as any
     } catch (error) {
-      // todo: create custom error class
       console.error("original query", query)
       throw error
     }

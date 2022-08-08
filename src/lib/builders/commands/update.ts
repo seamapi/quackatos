@@ -93,7 +93,6 @@ export class UpdateCommand<
     return this as any
   }
 
-  // todo: we shouldn't be able to compile and run with an empty whereable clause
   compile() {
     const returningSQL =
       this._returning.length > 0

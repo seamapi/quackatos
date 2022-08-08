@@ -28,9 +28,6 @@ export class InsertCommand<TableName extends schema.Table> {
     return this
   }
 
-  // todo: require values() to be called first
-  // todo: add onconflict
-  // todo: add returning
   compile() {
     const valuesSQL = mapWithSeparator(
       this._rows,
