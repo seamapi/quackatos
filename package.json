@@ -2,10 +2,18 @@
   "name": "quackatos",
   "version": "0.1.0",
   "description": "🦆 a query builder for Zapatos",
-  "keywords": ["query", "builder", "zapatos", "postgres", "sql"],
+  "keywords": [
+    "query",
+    "builder",
+    "zapatos",
+    "postgres",
+    "sql"
+  ],
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "repository": "git@github.com:seamapi/quackatos.git",
   "author": "Max Isom <hi@maxisom.me>",
   "license": "MIT",
@@ -43,6 +51,6 @@
     "ts-mixer": "6.0.1"
   },
   "lint-staged": {
-    "*.{ts,css,md,js,mjs}": "prettier --write"
+    "*.{ts,css,md,js,mjs,json}": "prettier --write"
   }
 }
