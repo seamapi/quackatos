@@ -19,7 +19,7 @@ import { DeleteCommand } from "./delete"
 type SelectResultMode = "MANY" | "NUMERIC"
 
 interface OrderSpecForTable<T extends schema.Table> {
-  by: schema.SQLForTable<T>
+  by: ColumnSpecificationsForTableWithoutWildcards<T>
   direction: "ASC" | "DESC"
   nulls?: "FIRST" | "LAST"
 }
@@ -185,8 +185,6 @@ export class SelectCommand<
     return this
   }
 
-  // todo: allow ordering by joined table
-  // todo: fix auto-complete typing
   orderBy(
     by: OrderSpecForTable<TableName>["by"],
     direction?: OrderSpecForTable<TableName>["direction"]
@@ -273,7 +271,7 @@ export class SelectCommand<
               throw new Error(
                 `Nulls must be FIRST/LAST/undefined, not '${o.nulls}'`
               )
-            return sql`${o.by} ${raw(o.direction)}${
+            return sql`${o.by.toString()} ${raw(o.direction)}${
               o.nulls ? sql` NULLS ${raw(o.nulls)}` : []
             }`
           })}`

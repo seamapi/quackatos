@@ -200,3 +200,19 @@ test("orderBy() (with array)", macro, (builder) =>
     .select("title", "rating")
     .limit(2)
 )
+
+test("orderBy() (works with join)", macro, (builder) =>
+  builder
+    .leftJoin("film_actor", "film.film_id", "film_actor.film_id")
+    .orderBy("actor_id", "ASC")
+    .select("film.film_id", "actor_id")
+    .limit(2)
+)
+
+test("orderBy() (works with null options)", macro, (builder) =>
+  builder
+    .leftJoin("film_actor", "film.film_id", "film_actor.film_id")
+    .orderBy({ by: "actor_id", direction: "DESC", nulls: "LAST" })
+    .select("film.film_id", "actor_id")
+    .limit(2)
+)
