@@ -18,6 +18,12 @@ import { DeleteCommand } from "./delete"
 
 type SelectResultMode = "MANY" | "NUMERIC"
 
+interface OrderSpecForTable<T extends schema.Table> {
+  by: ColumnSpecificationsForTableWithoutWildcards<T>
+  direction: "ASC" | "DESC"
+  nulls?: "FIRST" | "LAST"
+}
+
 type ReturnTypeForModeMap<Selectable> = {
   MANY: Selectable[]
   NUMERIC: number
@@ -50,6 +56,7 @@ export class SelectCommand<
 > {
   private readonly _tableName: TableName
   private _limit?: number
+  private _order: OrderSpecForTable<TableName>[] = []
   private _columnSpecifications: (
     | ColumnSpecificationsForTable<TableName>
     | SQLFragment
@@ -178,6 +185,47 @@ export class SelectCommand<
     return this
   }
 
+  orderBy(
+    by: OrderSpecForTable<TableName>["by"],
+    direction?: OrderSpecForTable<TableName>["direction"]
+  ): SelectCommand<TableName, Selectable, ResultMode, HasMadeCustomSelection>
+  orderBy(
+    spec: OrderSpecForTable<TableName>
+  ): SelectCommand<TableName, Selectable, ResultMode, HasMadeCustomSelection>
+  orderBy(
+    specs: {
+      by: OrderSpecForTable<TableName>["by"]
+      direction?: OrderSpecForTable<TableName>["direction"]
+    }[]
+  ): SelectCommand<TableName, Selectable, ResultMode, HasMadeCustomSelection>
+  orderBy(
+    specs: OrderSpecForTable<TableName>[]
+  ): SelectCommand<TableName, Selectable, ResultMode, HasMadeCustomSelection>
+  orderBy(
+    ...args: any
+  ): SelectCommand<TableName, Selectable, ResultMode, HasMadeCustomSelection> {
+    if (typeof args[0] === "string") {
+      // (by, direction)
+      this._order.push({
+        by: args[0] as any,
+        direction: args[1] ?? "ASC",
+      })
+    } else if (args.length === 1 && !Array.isArray(args[0])) {
+      // (spec)
+      this._order.push(args[0])
+    } else if (args.length === 1 && Array.isArray(args[0])) {
+      // (specs (partial or full))
+      this._order.push(
+        ...args[0].map((spec) => ({
+          direction: "ASC",
+          ...spec,
+        }))
+      )
+    }
+
+    return this
+  }
+
   delete() {
     return new DeleteCommand<TableName>(this._tableName).where(this._whereable)
   }
@@ -211,11 +259,28 @@ export class SelectCommand<
           )
         : sql`*`
 
+    const orderSQL =
+      this._order.length === 0
+        ? []
+        : sql` ORDER BY ${mapWithSeparator(this._order, sql`, `, (o) => {
+            if (!["ASC", "DESC"].includes(o.direction))
+              throw new Error(
+                `Direction must be ASC/DESC, not '${o.direction}'`
+              )
+            if (o.nulls && !["FIRST", "LAST"].includes(o.nulls))
+              throw new Error(
+                `Nulls must be FIRST/LAST/undefined, not '${o.nulls}'`
+              )
+            return sql`${o.by.toString()} ${raw(o.direction)}${
+              o.nulls ? sql` NULLS ${raw(o.nulls)}` : []
+            }`
+          })}`
+
     return sql`SELECT ${columnsSQL} FROM ${this._tableName} ${constructJoinSQL(
       this._joins
     )} WHERE ${
       this.isWhereEmpty() ? raw("TRUE") : this.compileWhereable()
-    } ${limitSQL}`.compile()
+    } ${orderSQL} ${limitSQL}`.compile()
   }
 
   protected transformResult(result: QueryResult): any {
