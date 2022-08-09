@@ -181,3 +181,22 @@ test("count() (typed correctly)", async (t) => {
   assert<Equals<typeof result, number>>()
   t.pass()
 })
+
+test("orderBy()", macro, (builder) =>
+  builder.orderBy("title", "DESC").select("title").limit(2)
+)
+
+test("orderBy() (defaults to ASC)", macro, (builder) =>
+  builder.orderBy("title").select("title").limit(2)
+)
+
+test("orderBy() (with full spec)", macro, (builder) =>
+  builder.orderBy({ by: "title", direction: "ASC" }).select("title").limit(2)
+)
+
+test("orderBy() (with array)", macro, (builder) =>
+  builder
+    .orderBy([{ by: "rating", direction: "DESC" }, { by: "title" }])
+    .select("title", "rating")
+    .limit(2)
+)
