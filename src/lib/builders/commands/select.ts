@@ -1,5 +1,5 @@
 import { WhereableStatement } from "../common/where"
-import { sql, param, SQLFragment } from "zapatos/db"
+import { sql, param, SQLFragment, raw } from "zapatos/db"
 import * as schema from "zapatos/schema"
 import { mix } from "ts-mixer"
 import { SQLCommand } from "../types"
@@ -8,10 +8,10 @@ import {
   ColumnSpecificationsForTableWithoutWildcards,
   constructColumnSelection,
   SelectableFromColumnSpecifications,
-} from "./utils/construct-column-selection"
-import { AnyJoin, constructJoinSQL } from "./utils/construct-join-sql"
+} from "../utils/construct-column-selection"
+import { AnyJoin, constructJoinSQL } from "../utils/construct-join-sql"
 import { NullPartial } from "~/lib/util-types"
-import { mapWithSeparator } from "./utils/map-with-separator"
+import { mapWithSeparator } from "../utils/map-with-separator"
 import { QueryResult } from "pg"
 import { UpdateCommand } from "./update"
 import { DeleteCommand } from "./delete"
@@ -213,7 +213,9 @@ export class SelectCommand<
 
     return sql`SELECT ${columnsSQL} FROM ${this._tableName} ${constructJoinSQL(
       this._joins
-    )} WHERE ${this._whereable} ${limitSQL}`.compile()
+    )} WHERE ${
+      this.isWhereEmpty() ? raw("TRUE") : this.compileWhereable()
+    } ${limitSQL}`.compile()
   }
 
   protected transformResult(result: QueryResult): any {

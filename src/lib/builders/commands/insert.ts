@@ -2,7 +2,7 @@ import { mix } from "ts-mixer"
 import { cols, sql, vals } from "zapatos/db"
 import * as schema from "zapatos/schema"
 import { SQLCommand } from "../types"
-import { mapWithSeparator } from "./utils/map-with-separator"
+import { mapWithSeparator } from "../utils/map-with-separator"
 
 export interface InsertCommand<TableName extends schema.Table>
   extends SQLCommand<never> {}

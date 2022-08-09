@@ -7,7 +7,7 @@ import {
   ColumnSpecificationsForTable,
   constructColumnSelection,
   SelectableFromColumnSpecifications,
-} from "./utils/construct-column-selection"
+} from "../utils/construct-column-selection"
 
 export interface UpdateCommand<
   TableName extends schema.Table,
@@ -94,6 +94,8 @@ export class UpdateCommand<
   }
 
   compile() {
+    this.throwIfWhereEmpty()
+
     const returningSQL =
       this._returning.length > 0
         ? sql`RETURNING ${constructColumnSelection(this._returning)}`
@@ -101,8 +103,8 @@ export class UpdateCommand<
 
     return sql`UPDATE ${this._tableName} SET (${cols(
       this._values
-    )}) = ROW(${vals(this._values)}) WHERE ${
-      this._whereable
-    } ${returningSQL}`.compile()
+    )}) = ROW(${vals(
+      this._values
+    )}) WHERE ${this.compileWhereable()} ${returningSQL}`.compile()
   }
 }

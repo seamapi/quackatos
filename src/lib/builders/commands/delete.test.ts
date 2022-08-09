@@ -26,3 +26,11 @@ test("delete works", async (t) => {
   )
   t.is(parseInt(countAfterDelete, 10), 0)
 })
+
+test("throws if no where conditions", async (t) => {
+  const { pool } = await getTestDatabase()
+
+  await t.throwsAsync(async () => {
+    await new DeleteCommand("film").run(pool)
+  })
+})
