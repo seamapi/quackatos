@@ -11,8 +11,8 @@ interface OnConflictSpecForTable<T extends schema.Table> {
 }
 
 interface ConflictBuilder<Parent> {
-  merge(): Parent
-  ignore(): Parent
+  doUpdateSet(): Parent
+  doNothing(): Parent
 }
 
 export interface InsertCommand<TableName extends schema.Table>
@@ -96,8 +96,7 @@ export class InsertCommand<TableName extends schema.Table> {
     target: OnConflictSpecForTable<TableName>["target"]
   ): ConflictBuilder<this> {
     return {
-      // todo: rename?
-      merge: () => {
+      doUpdateSet: () => {
         this._onConflict = {
           target,
           action: "DO UPDATE SET",
@@ -105,7 +104,7 @@ export class InsertCommand<TableName extends schema.Table> {
 
         return this
       },
-      ignore: () => {
+      doNothing: () => {
         this._onConflict = {
           target,
           action: "DO NOTHING",

@@ -31,7 +31,7 @@ test("insert works", async (t) => {
   t.is(parseInt(countAfterInsert, 10), parseInt(countBeforeInsert, 10) + 2)
 })
 
-test("onConflict().merge()", async (t) => {
+test("onConflict().doUpdateSet()", async (t) => {
   const { pool } = await getTestDatabase()
 
   await new InsertCommand("actor")
@@ -48,7 +48,7 @@ test("onConflict().merge()", async (t) => {
       }
     )
     .onConflict(["actor_id"])
-    .merge()
+    .doUpdateSet()
     .run(pool)
 
   const {
@@ -68,7 +68,7 @@ test("onConflict().merge()", async (t) => {
   })
 })
 
-test("onConflict().merge() (works with multiple targets)", async (t) => {
+test("onConflict().doUpdateSet() (works with multiple targets)", async (t) => {
   const { pool } = await getTestDatabase()
 
   const {
@@ -83,7 +83,7 @@ test("onConflict().merge() (works with multiple targets)", async (t) => {
       return_date: now,
     })
     .onConflict("rental_date", "inventory_id", "customer_id")
-    .merge()
+    .doUpdateSet()
 
   await t.notThrowsAsync(async () => await query.run(pool))
 
@@ -95,7 +95,7 @@ test("onConflict().merge() (works with multiple targets)", async (t) => {
   })
 })
 
-test("onConflict().merge() (works with constraint)", async (t) => {
+test("onConflictOnConstraint().doUpdateSet()", async (t) => {
   const { pool } = await getTestDatabase()
 
   const {
@@ -108,7 +108,7 @@ test("onConflict().merge() (works with constraint)", async (t) => {
       first_name: "foo",
     })
     .onConflictOnConstraint("actor_pkey")
-    .merge()
+    .doUpdateSet()
 
   await t.notThrowsAsync(async () => await query.run(pool))
 
@@ -121,7 +121,7 @@ test("onConflict().merge() (works with constraint)", async (t) => {
   })
 })
 
-test("onConflict().merge() (fails because wrong target)", async (t) => {
+test("onConflict().doUpdateSet() (fails because wrong target)", async (t) => {
   const { pool } = await getTestDatabase()
 
   const query = new InsertCommand("actor")
@@ -131,12 +131,12 @@ test("onConflict().merge() (fails because wrong target)", async (t) => {
       last_name: "bar",
     })
     .onConflict(["first_name"])
-    .merge()
+    .doUpdateSet()
 
   await t.throwsAsync(async () => await query.run(pool))
 })
 
-test("onConflict().ignore()", async (t) => {
+test("onConflict().doNothing()", async (t) => {
   const { pool } = await getTestDatabase()
 
   const query = new InsertCommand("actor")
@@ -146,7 +146,7 @@ test("onConflict().ignore()", async (t) => {
       last_name: "bar",
     })
     .onConflict(["actor_id"])
-    .ignore()
+    .doNothing()
 
   await t.notThrowsAsync(async () => await query.run(pool))
 
