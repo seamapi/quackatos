@@ -8,13 +8,14 @@ import { mapWithSeparator } from "../utils/map-with-separator"
 interface OnConflictSpecForTable<T extends schema.Table> {
   target: ColumnSpecificationsForTableWithoutWildcards<T>[] | Constraint<T>
   columnsToUpdate?: ColumnSpecificationsForTableWithoutWildcards<T>[]
+  values?: Partial<schema.InsertableForTable<T>>
   action: "DO NOTHING" | "DO UPDATE SET"
 }
 
 interface ConflictBuilder<TableName extends schema.Table, Parent> {
   /**
    * Defaults to updating (merging) all columns.
-   * Pass column names to override this behavior.
+   * Pass column names to override this behavior, or an object of values to use during the update.
    */
   doUpdateSet(
     columnsToUpdate?: ColumnSpecificationsForTableWithoutWildcards<TableName>[]
@@ -22,6 +23,7 @@ interface ConflictBuilder<TableName extends schema.Table, Parent> {
   doUpdateSet(
     ...columnsToUpdate: ColumnSpecificationsForTableWithoutWildcards<TableName>[]
   ): Parent
+  doUpdateSet(values: Partial<schema.InsertableForTable<TableName>>): Parent
 
   doNothing(): Parent
 }
@@ -87,11 +89,15 @@ export class InsertCommand<TableName extends schema.Table> {
       const colKeys =
         this._onConflict.columnsToUpdate ?? Object.keys(this._rows[0])
 
-      const columnsToUpdate = mapWithSeparator(
-        colKeys.map((col) => col.toString().split(".").pop()!),
-        sql`, `,
-        (c) => sql`${c} = EXCLUDED.${c}`
-      )
+      const columnsToUpdate = this._onConflict.values
+        ? sql`(${cols(this._onConflict.values)}) = ROW(${vals(
+            this._onConflict.values
+          )})`
+        : mapWithSeparator(
+            colKeys.map((col) => col.toString().split(".").pop()!),
+            sql`, `,
+            (c) => sql`${c} = EXCLUDED.${c}`
+          )
 
       const conflictPart = sql`ON CONFLICT ${conflictTargetSQL} DO`
       const conflictActionPart =
@@ -114,6 +120,10 @@ export class InsertCommand<TableName extends schema.Table> {
           target,
           action: "DO UPDATE SET",
           columnsToUpdate: args.length > 0 ? args.flat() : undefined,
+          values:
+            args.length === 1 && typeof args[0] === "object"
+              ? args[0]
+              : undefined,
         }
 
         return this

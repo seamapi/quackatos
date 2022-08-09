@@ -146,6 +146,28 @@ test("onConflictOnConstraint().doUpdateSet() (only update specific columns)", as
   t.is(actorAfter.last_name, "bar")
 })
 
+test("onConflictOnConstraint().doUpdateSet() (use object to update)", async (t) => {
+  const { pool } = await getTestDatabase()
+
+  const {
+    rows: [actor],
+  } = await pool.query("SELECT * FROM actor WHERE actor_id = 1")
+
+  await new InsertCommand("actor")
+    .values({
+      ...actor,
+    })
+    .onConflictOnConstraint("actor_pkey")
+    .doUpdateSet({ first_name: "foo" })
+    .run(pool)
+
+  const {
+    rows: [actorAfter],
+  } = await pool.query("SELECT * FROM actor WHERE actor_id = 1")
+
+  t.is(actorAfter.first_name, "foo")
+})
+
 test("onConflict().doUpdateSet() (fails because wrong target)", async (t) => {
   const { pool } = await getTestDatabase()
 
