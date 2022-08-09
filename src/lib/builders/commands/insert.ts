@@ -7,11 +7,22 @@ import { mapWithSeparator } from "../utils/map-with-separator"
 
 interface OnConflictSpecForTable<T extends schema.Table> {
   target: ColumnSpecificationsForTableWithoutWildcards<T>[] | Constraint<T>
+  columnsToUpdate?: ColumnSpecificationsForTableWithoutWildcards<T>[]
   action: "DO NOTHING" | "DO UPDATE SET"
 }
 
-interface ConflictBuilder<Parent> {
-  doUpdateSet(): Parent
+interface ConflictBuilder<TableName extends schema.Table, Parent> {
+  /**
+   * Defaults to updating (merging) all columns.
+   * Pass column names to override this behavior.
+   */
+  doUpdateSet(
+    columnsToUpdate?: ColumnSpecificationsForTableWithoutWildcards<TableName>[]
+  ): Parent
+  doUpdateSet(
+    ...columnsToUpdate: ColumnSpecificationsForTableWithoutWildcards<TableName>[]
+  ): Parent
+
   doNothing(): Parent
 }
 
@@ -42,11 +53,11 @@ export class InsertCommand<TableName extends schema.Table> {
 
   onConflict(
     ...columnNames: ColumnSpecificationsForTableWithoutWildcards<TableName>[]
-  ): ConflictBuilder<this>
+  ): ConflictBuilder<TableName, this>
   onConflict(
     columnNames: ColumnSpecificationsForTableWithoutWildcards<TableName>[]
-  ): ConflictBuilder<this>
-  onConflict(...args: any[]): ConflictBuilder<this> {
+  ): ConflictBuilder<TableName, this>
+  onConflict(...args: any[]): ConflictBuilder<TableName, this> {
     const target = args.length === 1 && Array.isArray(args[0]) ? args[0] : args
 
     return this._onConflictBuilderFactory(target)
@@ -54,12 +65,11 @@ export class InsertCommand<TableName extends schema.Table> {
 
   onConflictOnConstraint(
     indexName: schema.UniqueIndexForTable<TableName>
-  ): ConflictBuilder<this> {
+  ): ConflictBuilder<TableName, this> {
     return this._onConflictBuilderFactory(constraint(indexName))
   }
 
   compile() {
-    const colKeys = Object.keys(this._rows[0])
     const colsSQL = sql`${cols(this._rows[0])}`
 
     const valuesSQL = mapWithSeparator(
@@ -74,8 +84,11 @@ export class InsertCommand<TableName extends schema.Table> {
         ? sql`(${mapWithSeparator(this._onConflict.target, sql`, `, (c) => c)})`
         : sql`ON CONSTRAINT ${this._onConflict.target.value}`
 
+      const colKeys =
+        this._onConflict.columnsToUpdate ?? Object.keys(this._rows[0])
+
       const columnsToUpdate = mapWithSeparator(
-        colKeys.map((col) => col.split(".").pop()!),
+        colKeys.map((col) => col.toString().split(".").pop()!),
         sql`, `,
         (c) => sql`${c} = EXCLUDED.${c}`
       )
@@ -94,12 +107,13 @@ export class InsertCommand<TableName extends schema.Table> {
 
   private _onConflictBuilderFactory(
     target: OnConflictSpecForTable<TableName>["target"]
-  ): ConflictBuilder<this> {
-    return {
-      doUpdateSet: () => {
+  ): ConflictBuilder<TableName, this> {
+    const builder: ConflictBuilder<TableName, this> = {
+      doUpdateSet: (...args: any[]) => {
         this._onConflict = {
           target,
           action: "DO UPDATE SET",
+          columnsToUpdate: args.length > 0 ? args.flat() : undefined,
         }
 
         return this
@@ -113,5 +127,7 @@ export class InsertCommand<TableName extends schema.Table> {
         return this
       },
     }
+
+    return builder
   }
 }
