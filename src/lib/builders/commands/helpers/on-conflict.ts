@@ -79,12 +79,16 @@ export class OnConflictBuilder<
             (c) => sql`${c} = EXCLUDED.${c}`
           )
 
-      const conflictPart = sql`ON CONFLICT ${conflictTargetSQL} DO`
+      const whereSQL = sql`WHERE ${
+        this.isWhereEmpty() ? raw("TRUE") : this.compileWhereable()
+      }`
+
+      const conflictPart = sql`ON CONFLICT ${conflictTargetSQL} ${
+        this._onConflict.action === "DO NOTHING" ? whereSQL : sql``
+      } DO`
       const conflictActionPart =
         this._onConflict.action === "DO UPDATE SET"
-          ? sql`UPDATE SET ${columnsToUpdate} WHERE ${
-              this.isWhereEmpty() ? raw("TRUE") : this.compileWhereable()
-            }`
+          ? sql`UPDATE SET ${columnsToUpdate} ${whereSQL}`
           : sql`NOTHING`
 
       conflictSQL = sql`${conflictPart} ${conflictActionPart}`

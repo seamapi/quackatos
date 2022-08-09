@@ -236,3 +236,35 @@ test("onConflict().doUpdateSet().where()", async (t) => {
   t.not(actor1.first_name, "foo")
   t.is(actor2.first_name, "baz")
 })
+
+test("onConflict().doNothing().where()", async (t) => {
+  const { pool } = await getTestDatabase()
+
+  const query = new InsertCommand("actor")
+    .values({
+      actor_id: 1,
+      first_name: "foo",
+      last_name: "bar",
+    })
+    .onConflict(["actor_id"])
+    .doNothing()
+    .whereIn("actor_id", [1])
+
+  await t.notThrowsAsync(async () => await query.run(pool))
+})
+
+test("onConflict().doNothing().where() (fails if where clause doesn't match)", async (t) => {
+  const { pool } = await getTestDatabase()
+
+  const query = new InsertCommand("actor")
+    .values({
+      actor_id: 1,
+      first_name: "foo",
+      last_name: "bar",
+    })
+    .onConflict(["actor_id"])
+    .doNothing()
+    .whereIn("actor.actor_id", [2])
+
+  await t.throwsAsync(async () => await query.run(pool))
+})
