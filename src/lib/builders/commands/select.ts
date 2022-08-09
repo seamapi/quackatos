@@ -4,8 +4,8 @@ import * as schema from "zapatos/schema"
 import { mix } from "ts-mixer"
 import { SQLCommand } from "../types"
 import {
+  ColumnSpecificationsForTableWithWildcards,
   ColumnSpecificationsForTable,
-  ColumnSpecificationsForTableWithoutWildcards,
   constructColumnSelection,
   SelectableFromColumnSpecifications,
 } from "../utils/construct-column-selection"
@@ -19,7 +19,7 @@ import { DeleteCommand } from "./delete"
 type SelectResultMode = "MANY" | "NUMERIC"
 
 interface OrderSpecForTable<T extends schema.Table> {
-  by: ColumnSpecificationsForTableWithoutWildcards<T>
+  by: ColumnSpecificationsForTable<T>
   direction: "ASC" | "DESC"
   nulls?: "FIRST" | "LAST"
 }
@@ -39,7 +39,7 @@ export interface SelectCommand<
     schema.SelectableForTable<TableName>
   >,
   Whereable = schema.WhereableForTable<TableName>
-> extends WhereableStatement<Whereable>,
+> extends WhereableStatement<TableName, Whereable>,
     SQLCommand<ReturnTypeForModeMap<Selectable>[ResultMode]> {}
 
 @mix(WhereableStatement, SQLCommand)
@@ -58,7 +58,7 @@ export class SelectCommand<
   private _limit?: number
   private _order: OrderSpecForTable<TableName>[] = []
   private _columnSpecifications: (
-    | ColumnSpecificationsForTable<TableName>
+    | ColumnSpecificationsForTableWithWildcards<TableName>
     | SQLFragment
   )[] = []
   private _joins: AnyJoin[] = []
@@ -68,7 +68,7 @@ export class SelectCommand<
     this._tableName = tableName
   }
 
-  select<T extends ColumnSpecificationsForTable<TableName>[]>(
+  select<T extends ColumnSpecificationsForTableWithWildcards<TableName>[]>(
     ...columnNames: T
   ): SelectCommand<
     TableName,
@@ -78,7 +78,7 @@ export class SelectCommand<
     true,
     SelectableMap
   >
-  select<T extends ColumnSpecificationsForTable<TableName>[]>(
+  select<T extends ColumnSpecificationsForTableWithWildcards<TableName>[]>(
     columnSpecifications: T
   ): SelectCommand<
     TableName,
@@ -88,7 +88,7 @@ export class SelectCommand<
     true,
     SelectableMap
   >
-  select<T extends ColumnSpecificationsForTable<TableName>[]>(
+  select<T extends ColumnSpecificationsForTableWithWildcards<TableName>[]>(
     ...args: any
   ): SelectCommand<
     TableName,
@@ -116,12 +116,8 @@ export class SelectCommand<
   // todo: should accept WhereableStatement
   leftJoin<WithTableName extends schema.Table>(
     withTableName: WithTableName,
-    column1: ColumnSpecificationsForTableWithoutWildcards<
-      TableName | WithTableName
-    >,
-    column2: ColumnSpecificationsForTableWithoutWildcards<
-      TableName | WithTableName
-    >
+    column1: ColumnSpecificationsForTable<TableName | WithTableName>,
+    column2: ColumnSpecificationsForTable<TableName | WithTableName>
   ): SelectCommand<
     TableName | WithTableName,
     Selectable,
@@ -239,7 +235,7 @@ export class SelectCommand<
 
     const stringColumnSpecifications = this._columnSpecifications.filter(
       (spec) => typeof spec === "string"
-    ) as ColumnSpecificationsForTable<TableName>[]
+    ) as ColumnSpecificationsForTableWithWildcards<TableName>[]
     const sqlColumnSpecifications = this._columnSpecifications.filter(
       (spec) => typeof spec !== "string"
     ) as SQLFragment[]

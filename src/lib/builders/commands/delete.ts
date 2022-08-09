@@ -7,7 +7,7 @@ import { SQLCommand } from "../types"
 export interface DeleteCommand<
   TableName extends schema.Table,
   Whereable extends schema.WhereableForTable<TableName>
-> extends WhereableStatement<Whereable>,
+> extends WhereableStatement<TableName, Whereable>,
     SQLCommand<never> {}
 
 @mix(WhereableStatement, SQLCommand)

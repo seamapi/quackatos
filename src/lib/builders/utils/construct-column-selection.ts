@@ -18,21 +18,23 @@ type CommonColumnsInTableUnion<TableName extends Table> =
     [K in TableName]: keyof SelectableForTable<K>
   }>
 
-export type ColumnSpecificationsForTable<TableName extends Table> = Exclude<
-  ColumnSpecificationsForTableUnion<TableName>[TableName],
-  Extract<
+export type ColumnSpecificationsForTableWithWildcards<TableName extends Table> =
+  Exclude<
     ColumnSpecificationsForTableUnion<TableName>[TableName],
-    CommonColumnsInTableUnion<TableName>
+    Extract<
+      ColumnSpecificationsForTableUnion<TableName>[TableName],
+      CommonColumnsInTableUnion<TableName>
+    >
   >
->
 
-export type ColumnSpecificationsForTableWithoutWildcards<
-  TableName extends Table
-> = Exclude<ColumnSpecificationsForTable<TableName>, "*" | `${TableName}.*`>
+export type ColumnSpecificationsForTable<TableName extends Table> = Exclude<
+  ColumnSpecificationsForTableWithWildcards<TableName>,
+  "*" | `${TableName}.*`
+>
 
 export type SelectableFromColumnSpecifications<
   DefaultTableName extends Table,
-  ColumnSpecifiers extends ColumnSpecificationsForTable<DefaultTableName>,
+  ColumnSpecifiers extends ColumnSpecificationsForTableWithWildcards<DefaultTableName>,
   OverriddenSelectableMap extends Record<DefaultTableName, any>
 > = UnionToIntersection<
   ColumnSpecifiers extends `${infer TableName}.*`
@@ -54,8 +56,22 @@ export type SelectableFromColumnSpecifications<
     : never
 >
 
+// todo: optimize / simplify type
+export type ColumnSpecificationValue<
+  DefaultTableName extends Table,
+  ColumnSpecification extends ColumnSpecificationsForTable<DefaultTableName>
+> = SelectableFromColumnSpecifications<
+  DefaultTableName,
+  ColumnSpecification,
+  Record<DefaultTableName, SelectableForTable<DefaultTableName>>
+>[keyof SelectableFromColumnSpecifications<
+  DefaultTableName,
+  ColumnSpecification,
+  Record<DefaultTableName, SelectableForTable<DefaultTableName>>
+>]
+
 export const constructColumnSelection = <TableName extends Table>(
-  columnSpecifications: ColumnSpecificationsForTable<TableName>[]
+  columnSpecifications: ColumnSpecificationsForTableWithWildcards<TableName>[]
 ) => {
   const wildcardColumnsSQL = columnSpecifications
     .filter((c) => c.toString().includes("*"))

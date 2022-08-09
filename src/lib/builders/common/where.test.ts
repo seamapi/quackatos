@@ -10,7 +10,7 @@ interface Runner<
   TableName extends schema.Table,
   Selectable = schema.SelectableForTable<TableName>,
   Whereable = schema.WhereableForTable<TableName>
-> extends WhereableStatement<Whereable>,
+> extends WhereableStatement<TableName, Whereable>,
     SQLCommand<Selectable> {}
 
 @mix(WhereableStatement, SQLCommand)

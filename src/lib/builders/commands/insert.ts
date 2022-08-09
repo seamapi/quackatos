@@ -3,11 +3,13 @@ import { cols, sql, vals } from "zapatos/db"
 import * as schema from "zapatos/schema"
 import { SQLCommand } from "../types"
 import { mapWithSeparator } from "../utils/map-with-separator"
+import { OnConflictBuilder } from "./helpers/on-conflict"
 
 export interface InsertCommand<TableName extends schema.Table>
-  extends SQLCommand<never> {}
+  extends OnConflictBuilder<TableName>,
+    SQLCommand<never> {}
 
-@mix(SQLCommand)
+@mix(OnConflictBuilder, SQLCommand)
 export class InsertCommand<TableName extends schema.Table> {
   private readonly _tableName: string
   private _rows: Array<schema.InsertableForTable<TableName>> = []
@@ -29,16 +31,18 @@ export class InsertCommand<TableName extends schema.Table> {
   }
 
   compile() {
+    const colsSQL = sql`${cols(this._rows[0])}`
+
     const valuesSQL = mapWithSeparator(
       this._rows,
       sql`, `,
       (v) => sql`(${vals(v)})`
     )
 
-    const result = sql`INSERT INTO ${this._tableName} (${cols(
-      this._rows[0]
-    )}) VALUES ${valuesSQL};`.compile()
-
-    return result
+    return sql`INSERT INTO ${
+      this._tableName
+    } (${colsSQL}) VALUES ${valuesSQL} ${this.compileOnConflict(
+      Object.keys(this._rows[0])
+    )};`.compile()
   }
 }

@@ -1,6 +1,10 @@
-import { Whereable } from "zapatos/schema"
+import { Table, WhereableForTable, Whereable } from "zapatos/schema"
 import { conditions, SQLFragment, AllType, all, sql, raw } from "zapatos/db"
 import { mapWithSeparator } from "~/lib/builders/utils/map-with-separator"
+import {
+  ColumnSpecificationsForTable,
+  ColumnSpecificationValue,
+} from "../utils"
 
 type WhereableConditions<W extends Whereable> = Array<{
   bool: "AND" | "OR"
@@ -8,17 +12,20 @@ type WhereableConditions<W extends Whereable> = Array<{
   nested?: WhereableConditions<W>
 }>
 
-export class WhereableStatement<W extends Whereable> {
+export class WhereableStatement<
+  TableName extends Table,
+  W extends Whereable = WhereableForTable<TableName>
+> {
   protected _whereable: WhereableConditions<W> = []
 
-  whereIn<ColumnName extends keyof W>(
-    column: ColumnName,
-    values: W[ColumnName][]
+  whereIn<ColumnName extends ColumnSpecificationsForTable<TableName>>(
+    columnName: ColumnName,
+    values: ColumnSpecificationValue<TableName, ColumnName>[]
   ): this {
     this._whereable.push({
       bool: "AND",
       where: {
-        [column]: conditions.isIn(values),
+        [columnName]: conditions.isIn(values),
       } as any,
     })
 
@@ -28,12 +35,12 @@ export class WhereableStatement<W extends Whereable> {
   where(
     args:
       | ((
-          builder: WhereableStatement<Whereable>
-        ) => WhereableStatement<Whereable>)
+          builder: WhereableStatement<TableName>
+        ) => WhereableStatement<TableName>)
       | WhereableConditions<W>[number]["where"]
       | WhereableConditions<W>[number]
   ): this {
-    const builder = new WhereableStatement<Whereable>()
+    const builder = new WhereableStatement<TableName>()
 
     if (typeof args == "function") {
       const configured = args(builder)
