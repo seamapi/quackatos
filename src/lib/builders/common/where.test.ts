@@ -22,7 +22,9 @@ class Runner<
   constructor(private readonly tableName: TableName) {}
 
   compile() {
-    return sql`SELECT * FROM ${this.tableName} WHERE ${this._whereable}`.compile()
+    return sql`SELECT * FROM ${
+      this.tableName
+    } WHERE ${this.compileWhereable()}`.compile()
   }
 }
 

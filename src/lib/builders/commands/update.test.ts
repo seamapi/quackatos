@@ -2,16 +2,25 @@ import test from "ava"
 import { assert, Equals } from "tsafe"
 import { createMacroForBuilder, getTestDatabase } from "~/tests"
 import * as schema from "zapatos/schema"
+import * as db from "zapatos/db"
 import { UpdateCommand } from "./update"
 
 const macro = createMacroForBuilder({
   builderFactory: () => new UpdateCommand("film"),
 })
 
+test("throws if no where conditions", async (t) => {
+  const { pool } = await getTestDatabase()
+
+  await t.throwsAsync(async () => {
+    await new UpdateCommand("film").set("title", "foo").run(pool)
+  })
+})
+
 test(
   "set() (object)",
   macro,
-  (builder) => builder.set({ title: "foo" }),
+  (builder) => builder.set({ title: "foo" }).where(db.all),
   async (t, _, pool) => {
     const result = await pool.query(
       "SELECT title FROM film WHERE title = 'foo' LIMIT 1"
@@ -23,7 +32,7 @@ test(
 test(
   "set() (single column)",
   macro,
-  (builder) => builder.set("title", "foo"),
+  (builder) => builder.set("title", "foo").where(db.all),
   async (t, _, pool) => {
     const result = await pool.query(
       "SELECT title FROM film WHERE title = 'foo' LIMIT 1"
@@ -59,6 +68,7 @@ test("returning() (*, typed correctly)", async (t) => {
   const { pool } = await getTestDatabase()
   const result = await new UpdateCommand("film")
     .set({ title: "foo" })
+    .where(db.all)
     .returning("*")
     .run(pool)
 
@@ -70,6 +80,7 @@ test("returning() (two columns, typed correctly)", async (t) => {
   const { pool } = await getTestDatabase()
   const result = await new UpdateCommand("film")
     .set({ title: "foo" })
+    .where(db.all)
     .returning(["film_id", "title"])
     .run(pool)
 
@@ -83,6 +94,7 @@ test("returning() (merges, typed correctly)", async (t) => {
   const { pool } = await getTestDatabase()
   const result = await new UpdateCommand("film")
     .set({ title: "foo" })
+    .where(db.all)
     .returning("film_id")
     .returning("title")
     .run(pool)

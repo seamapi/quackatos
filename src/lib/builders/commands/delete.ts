@@ -22,6 +22,10 @@ export class DeleteCommand<
   }
 
   compile() {
-    return sql`DELETE FROM ${this._tableName} WHERE ${this._whereable}`.compile()
+    this.throwIfWhereEmpty()
+
+    return sql`DELETE FROM ${
+      this._tableName
+    } WHERE ${this.compileWhereable()}`.compile()
   }
 }
