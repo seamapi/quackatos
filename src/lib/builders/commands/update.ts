@@ -4,7 +4,7 @@ import { mix } from "ts-mixer"
 import { WhereableStatement } from "../common/where"
 import { SQLCommand } from "../types"
 import {
-  ColumnSpecificationsForTable,
+  ColumnSpecificationsForTableWithWildcards,
   constructColumnSelection,
   SelectableFromColumnSpecifications,
 } from "../utils/construct-column-selection"
@@ -18,7 +18,7 @@ export interface UpdateCommand<
     schema.SelectableForTable<TableName>
   >,
   Returning = {}
-> extends WhereableStatement<Whereable>,
+> extends WhereableStatement<TableName, Whereable>,
     SQLCommand<Returning[]> {}
 
 @mix(WhereableStatement, SQLCommand)
@@ -34,7 +34,8 @@ export class UpdateCommand<
 > {
   private readonly _tableName: string
   private _values: Partial<Updatable> = {}
-  private _returning: ColumnSpecificationsForTable<TableName>[] = []
+  private _returning: ColumnSpecificationsForTableWithWildcards<TableName>[] =
+    []
 
   constructor(tableName: TableName) {
     this._tableName = tableName
@@ -55,7 +56,7 @@ export class UpdateCommand<
     return this
   }
 
-  returning<T extends ColumnSpecificationsForTable<TableName>[]>(
+  returning<T extends ColumnSpecificationsForTableWithWildcards<TableName>[]>(
     ...columnNames: T
   ): UpdateCommand<
     TableName,
@@ -65,7 +66,7 @@ export class UpdateCommand<
     Returning &
       SelectableFromColumnSpecifications<TableName, T[number], SelectableMap>
   >
-  returning<T extends ColumnSpecificationsForTable<TableName>[]>(
+  returning<T extends ColumnSpecificationsForTableWithWildcards<TableName>[]>(
     columnSpecifications: T
   ): UpdateCommand<
     TableName,
@@ -75,7 +76,7 @@ export class UpdateCommand<
     Returning &
       SelectableFromColumnSpecifications<TableName, T[number], SelectableMap>
   >
-  returning<T extends ColumnSpecificationsForTable<TableName>[]>(
+  returning<T extends ColumnSpecificationsForTableWithWildcards<TableName>[]>(
     ...args: any
   ): UpdateCommand<
     TableName,

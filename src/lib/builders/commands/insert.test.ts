@@ -204,3 +204,35 @@ test("onConflict().doNothing()", async (t) => {
   t.not(actor.first_name, "foo")
   t.not(actor.last_name, "bar")
 })
+
+// todo: add similar test for doNothing()
+test("onConflict().doUpdateSet().where()", async (t) => {
+  const { pool } = await getTestDatabase()
+
+  await new InsertCommand("actor")
+    .values(
+      {
+        actor_id: 1,
+        first_name: "foo",
+        last_name: "bar",
+      },
+      {
+        actor_id: 2,
+        first_name: "baz",
+        last_name: "qux",
+      }
+    )
+    .onConflict(["actor_id"])
+    .doUpdateSet()
+    .whereIn("actor.actor_id", [2])
+    .run(pool)
+
+  const {
+    rows: [actor1, actor2],
+  } = await pool.query(
+    `SELECT * FROM actor WHERE actor_id IN (1, 2) ORDER BY actor_id`
+  )
+
+  t.not(actor1.first_name, "foo")
+  t.is(actor2.first_name, "baz")
+})

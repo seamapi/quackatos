@@ -2,19 +2,21 @@ import {
   cols,
   constraint,
   Constraint,
+  raw,
   sql,
   SQLFragment,
   vals,
 } from "zapatos/db"
 import * as schema from "zapatos/schema"
 import {
-  ColumnSpecificationsForTableWithoutWildcards,
+  ColumnSpecificationsForTable,
   mapWithSeparator,
 } from "~/lib/builders/utils"
+import { WhereableStatement } from "~/lib/builders/common"
 
 interface OnConflictSpecForTable<T extends schema.Table> {
-  target: ColumnSpecificationsForTableWithoutWildcards<T>[] | Constraint<T>
-  columnsToUpdate?: ColumnSpecificationsForTableWithoutWildcards<T>[]
+  target: ColumnSpecificationsForTable<T>[] | Constraint<T>
+  columnsToUpdate?: ColumnSpecificationsForTable<T>[]
   values?: Partial<schema.InsertableForTable<T>>
   action: "DO NOTHING" | "DO UPDATE SET"
 }
@@ -25,24 +27,26 @@ interface ConflictBuilder<TableName extends schema.Table, Parent> {
    * Pass column names to override this behavior, or an object of values to use during the update.
    */
   doUpdateSet(
-    columnsToUpdate?: ColumnSpecificationsForTableWithoutWildcards<TableName>[]
+    columnsToUpdate?: ColumnSpecificationsForTable<TableName>[]
   ): Parent
   doUpdateSet(
-    ...columnsToUpdate: ColumnSpecificationsForTableWithoutWildcards<TableName>[]
+    ...columnsToUpdate: ColumnSpecificationsForTable<TableName>[]
   ): Parent
   doUpdateSet(values: Partial<schema.InsertableForTable<TableName>>): Parent
 
   doNothing(): Parent
 }
 
-export class OnConflictBuilder<TableName extends schema.Table> {
+export class OnConflictBuilder<
+  TableName extends schema.Table
+> extends WhereableStatement<TableName> {
   private _onConflict?: OnConflictSpecForTable<TableName>
 
   onConflict(
-    ...columnNames: ColumnSpecificationsForTableWithoutWildcards<TableName>[]
+    ...columnNames: ColumnSpecificationsForTable<TableName>[]
   ): ConflictBuilder<TableName, this>
   onConflict(
-    columnNames: ColumnSpecificationsForTableWithoutWildcards<TableName>[]
+    columnNames: ColumnSpecificationsForTable<TableName>[]
   ): ConflictBuilder<TableName, this>
   onConflict(...args: any[]): ConflictBuilder<TableName, this> {
     const target = args.length === 1 && Array.isArray(args[0]) ? args[0] : args
@@ -78,7 +82,9 @@ export class OnConflictBuilder<TableName extends schema.Table> {
       const conflictPart = sql`ON CONFLICT ${conflictTargetSQL} DO`
       const conflictActionPart =
         this._onConflict.action === "DO UPDATE SET"
-          ? sql`UPDATE SET ${columnsToUpdate}`
+          ? sql`UPDATE SET ${columnsToUpdate} WHERE ${
+              this.isWhereEmpty() ? raw("TRUE") : this.compileWhereable()
+            }`
           : sql`NOTHING`
 
       conflictSQL = sql`${conflictPart} ${conflictActionPart}`

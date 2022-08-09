@@ -1,9 +1,11 @@
 import test from "ava"
 import { assert, Equals } from "tsafe"
-import { ColumnSpecificationsForTable } from "./construct-column-selection"
+import { ColumnSpecificationsForTableWithWildcards } from "./construct-column-selection"
 
 test("typed correctly", (t) => {
-  type PossibleSpecifications = ColumnSpecificationsForTable<"film" | "actor">
+  type PossibleSpecifications = ColumnSpecificationsForTableWithWildcards<
+    "film" | "actor"
+  >
 
   // Allow * notation
   assert<Equals<Extract<PossibleSpecifications, "*">, "*">>()
