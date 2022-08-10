@@ -57,7 +57,7 @@ class WaitBuilder<Parent> extends BaseBuilder {
   }
 }
 
-export class LocksBuilder extends BaseBuilder {
+export class LockClauseBuilder extends BaseBuilder {
   forUpdate(
     ...of: Exclude<LockingSpec["of"], undefined>
   ): this & WaitBuilder<this>

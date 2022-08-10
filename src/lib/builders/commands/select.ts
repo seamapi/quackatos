@@ -15,7 +15,7 @@ import { mapWithSeparator } from "../utils/map-with-separator"
 import { QueryResult } from "pg"
 import { UpdateCommand } from "./update"
 import { DeleteCommand } from "./delete"
-import { LocksBuilder } from "./helpers/locks"
+import { LockClauseBuilder } from "./clauses/locks"
 
 interface OrderSpecForTable<T extends schema.Table> {
   by: ColumnSpecificationsForTable<T>
@@ -42,10 +42,10 @@ export interface SelectCommand<
   >,
   Whereable = schema.WhereableForTable<TableName>
 > extends WhereableStatement<TableName, Whereable>,
-    LocksBuilder,
+    LockClauseBuilder,
     SQLCommand<ReturnTypeForModeMap<Selectable>[ResultMode]> {}
 
-@mix(WhereableStatement, LocksBuilder, SQLCommand)
+@mix(WhereableStatement, LockClauseBuilder, SQLCommand)
 export class SelectCommand<
   TableName extends schema.Table,
   Selectable = schema.SelectableForTable<TableName>,

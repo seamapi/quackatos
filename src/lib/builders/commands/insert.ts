@@ -3,13 +3,13 @@ import { cols, sql, vals } from "zapatos/db"
 import * as schema from "zapatos/schema"
 import { SQLCommand } from "../common/sql-command"
 import { mapWithSeparator } from "../utils/map-with-separator"
-import { OnConflictBuilder } from "./helpers/on-conflict"
+import { OnConflictClauseBuilder } from "./clauses/on-conflict"
 
 export interface InsertCommand<TableName extends schema.Table>
-  extends OnConflictBuilder<TableName>,
+  extends OnConflictClauseBuilder<TableName>,
     SQLCommand<never> {}
 
-@mix(OnConflictBuilder, SQLCommand)
+@mix(OnConflictClauseBuilder, SQLCommand)
 export class InsertCommand<TableName extends schema.Table> {
   private readonly _tableName: string
   private _rows: Array<schema.InsertableForTable<TableName>> = []
