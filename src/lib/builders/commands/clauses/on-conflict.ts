@@ -37,7 +37,7 @@ interface ConflictBuilder<TableName extends schema.Table, Parent> {
   doNothing(): Parent
 }
 
-export class OnConflictBuilder<
+export class OnConflictClauseBuilder<
   TableName extends schema.Table
 > extends WhereableStatement<TableName> {
   private _onConflict?: OnConflictSpecForTable<TableName>

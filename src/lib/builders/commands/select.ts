@@ -15,14 +15,15 @@ import { mapWithSeparator } from "../utils/map-with-separator"
 import { QueryResult } from "pg"
 import { UpdateCommand } from "./update"
 import { DeleteCommand } from "./delete"
-
-type SelectResultMode = "MANY" | "SINGLE" | "NUMERIC"
+import { LockClauseBuilder } from "./clauses/locks"
 
 interface OrderSpecForTable<T extends schema.Table> {
   by: ColumnSpecificationsForTable<T>
   direction: "ASC" | "DESC"
   nulls?: "FIRST" | "LAST"
 }
+
+type SelectResultMode = "MANY" | "SINGLE" | "NUMERIC"
 
 type ReturnTypeForModeMap<Selectable> = {
   MANY: Selectable[]
@@ -41,9 +42,10 @@ export interface SelectCommand<
   >,
   Whereable = schema.WhereableForTable<TableName>
 > extends WhereableStatement<TableName, Whereable>,
+    LockClauseBuilder,
     SQLCommand<ReturnTypeForModeMap<Selectable>[ResultMode]> {}
 
-@mix(WhereableStatement, SQLCommand)
+@mix(WhereableStatement, LockClauseBuilder, SQLCommand)
 export class SelectCommand<
   TableName extends schema.Table,
   Selectable = schema.SelectableForTable<TableName>,
@@ -114,11 +116,6 @@ export class SelectCommand<
     return this as any
   }
 
-  first(): SelectCommand<TableName, Selectable, "SINGLE"> {
-    this._resultMode = "SINGLE"
-    return this as any
-  }
-
   // todo: should accept WhereableStatement
   leftJoin<WithTableName extends schema.Table>(
     withTableName: WithTableName,
@@ -182,11 +179,6 @@ export class SelectCommand<
     return this as any
   }
 
-  limit(limit: number) {
-    this._limit = limit
-    return this
-  }
-
   orderBy(
     by: OrderSpecForTable<TableName>["by"],
     direction?: OrderSpecForTable<TableName>["direction"]
@@ -226,6 +218,16 @@ export class SelectCommand<
     }
 
     return this
+  }
+
+  limit(limit: number) {
+    this._limit = limit
+    return this
+  }
+
+  first(): SelectCommand<TableName, Selectable, "SINGLE"> {
+    this._resultMode = "SINGLE"
+    return this.limit(1) as any
   }
 
   delete() {
@@ -282,7 +284,7 @@ export class SelectCommand<
       this._joins
     )} WHERE ${
       this.isWhereEmpty() ? raw("TRUE") : this.compileWhereable()
-    } ${orderSQL} ${limitSQL}`.compile()
+    } ${orderSQL} ${limitSQL} ${this.compileLocks()}`.compile()
   }
 
   protected transformResult(result: QueryResult): any {
