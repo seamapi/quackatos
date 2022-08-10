@@ -1,4 +1,4 @@
 export * from "./commands"
 export * from "./common"
-export * from "./types"
+export * from "./common/sql-command"
 export * from "./query-builder"

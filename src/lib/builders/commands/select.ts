@@ -2,7 +2,7 @@ import { WhereableStatement } from "../common/where"
 import { sql, param, SQLFragment, raw } from "zapatos/db"
 import * as schema from "zapatos/schema"
 import { mix } from "ts-mixer"
-import { SQLCommand } from "../types"
+import { SQLCommand } from "../common/sql-command"
 import {
   ColumnSpecificationsForTableWithWildcards,
   ColumnSpecificationsForTable,

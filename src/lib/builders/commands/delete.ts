@@ -2,7 +2,7 @@ import { mix } from "ts-mixer"
 import { sql } from "zapatos/db"
 import * as schema from "zapatos/schema"
 import { WhereableStatement } from "../common"
-import { SQLCommand } from "../types"
+import { SQLCommand } from "../common/sql-command"
 
 export interface DeleteCommand<
   TableName extends schema.Table,
