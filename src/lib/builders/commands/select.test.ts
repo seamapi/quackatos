@@ -231,3 +231,14 @@ test("result is casted correctly", async (t) => {
   t.true(staff.picture instanceof Buffer)
   t.deepEqual((staff as any).data, { a: 1 })
 })
+
+test("first()", async (t) => {
+  const { pool } = await getTestDatabase()
+  const result = await new SelectCommand("film")
+    .orderBy("film_id")
+    .first()
+    .run(pool)
+
+  assert<Equals<typeof result, schema.film.Selectable | undefined>>()
+  t.is(result?.film_id, 1)
+})

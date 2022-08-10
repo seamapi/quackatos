@@ -16,7 +16,7 @@ import { QueryResult } from "pg"
 import { UpdateCommand } from "./update"
 import { DeleteCommand } from "./delete"
 
-type SelectResultMode = "MANY" | "NUMERIC"
+type SelectResultMode = "MANY" | "SINGLE" | "NUMERIC"
 
 interface OrderSpecForTable<T extends schema.Table> {
   by: ColumnSpecificationsForTable<T>
@@ -26,6 +26,7 @@ interface OrderSpecForTable<T extends schema.Table> {
 
 type ReturnTypeForModeMap<Selectable> = {
   MANY: Selectable[]
+  SINGLE: Selectable | undefined
   NUMERIC: number
 }
 
@@ -110,6 +111,11 @@ export class SelectCommand<
     this._columnSpecifications.push(sql`COUNT(*)`)
     this._resultMode = "NUMERIC"
 
+    return this as any
+  }
+
+  first(): SelectCommand<TableName, Selectable, "SINGLE"> {
+    this._resultMode = "SINGLE"
     return this as any
   }
 
@@ -283,6 +289,8 @@ export class SelectCommand<
     switch (this._resultMode) {
       case "MANY":
         return result.rows
+      case "SINGLE":
+        return result.rows[0]
       case "NUMERIC":
         return parseInt(result.rows[0].count, 10)
     }
