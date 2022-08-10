@@ -216,3 +216,18 @@ test("orderBy() (works with null options)", macro, (builder) =>
     .select("film.film_id", "actor_id")
     .limit(2)
 )
+
+test("result is casted correctly", async (t) => {
+  const { pool } = await getTestDatabase()
+
+  // Add jsonb column
+  await pool.query('ALTER TABLE "staff" ADD COLUMN "data" jsonb')
+  await pool.query('UPDATE "staff" SET "data" = \'{"a": 1}\'')
+
+  // Check timestamp, binary, and jsonb columns
+  const [staff] = await new SelectCommand("staff").limit(1).run(pool)
+
+  t.true(staff.last_update instanceof Date)
+  t.true(staff.picture instanceof Buffer)
+  t.deepEqual((staff as any).data, { a: 1 })
+})
