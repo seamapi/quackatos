@@ -21,7 +21,7 @@ test(
   "set() (object)",
   macro,
   (builder) => builder.set({ title: "foo" }).where(db.all),
-  async (t, _, pool) => {
+  async (t, _result, _query, pool) => {
     const result = await pool.query(
       "SELECT title FROM film WHERE title = 'foo' LIMIT 1"
     )
@@ -33,7 +33,7 @@ test(
   "set() (single column)",
   macro,
   (builder) => builder.set("title", "foo").where(db.all),
-  async (t, _, pool) => {
+  async (t, _result, _query, pool) => {
     const result = await pool.query(
       "SELECT title FROM film WHERE title = 'foo' LIMIT 1"
     )

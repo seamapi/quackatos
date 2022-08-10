@@ -234,11 +234,49 @@ test("result is casted correctly", async (t) => {
 
 test("first()", async (t) => {
   const { pool } = await getTestDatabase()
-  const result = await new SelectCommand("film")
-    .orderBy("film_id")
-    .first()
-    .run(pool)
+  const query = await new SelectCommand("film").orderBy("film_id").first()
+
+  // Should limit results to 1
+  t.true(query.compile().text.includes("LIMIT"))
+
+  const result = await query.run(pool)
 
   assert<Equals<typeof result, schema.film.Selectable | undefined>>()
   t.is(result?.film_id, 1)
 })
+
+test(
+  "forUpdate()",
+  macro,
+  (builder) => builder.first().forUpdate("film"),
+  (t, _, query) => {
+    t.true(query.text.includes("FOR UPDATE"))
+  }
+)
+
+test(
+  "forNoKeyUpdate()",
+  macro,
+  (builder) => builder.first().forNoKeyUpdate("film"),
+  (t, _, query) => {
+    t.true(query.text.includes("FOR NO KEY UPDATE"))
+  }
+)
+
+test(
+  "forShare()",
+  macro,
+  (builder) => builder.first().forShare("film"),
+  (t, _, query) => {
+    t.true(query.text.includes("FOR SHARE"))
+  }
+)
+
+test(
+  "forKeyShare()",
+  macro,
+  (builder) => builder.first().forKeyShare("film"),
+  (t, _, query) => {
+    t.true(query.text.includes("FOR KEY SHARE"))
+  }
+)
