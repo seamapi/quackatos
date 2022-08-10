@@ -4,7 +4,7 @@ import { mix } from "ts-mixer"
 import * as schema from "zapatos/schema"
 import { sql } from "zapatos/db"
 import { WhereableStatement } from "./where"
-import { SQLCommand } from "../types"
+import { SQLCommand } from "./sql-command"
 
 interface Runner<
   TableName extends schema.Table,

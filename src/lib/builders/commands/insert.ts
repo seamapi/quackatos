@@ -1,7 +1,7 @@
 import { mix } from "ts-mixer"
 import { cols, sql, vals } from "zapatos/db"
 import * as schema from "zapatos/schema"
-import { SQLCommand } from "../types"
+import { SQLCommand } from "../common/sql-command"
 import { mapWithSeparator } from "../utils/map-with-separator"
 import { OnConflictBuilder } from "./helpers/on-conflict"
 
