@@ -28,9 +28,10 @@
     "ava-typescript-worker": "1.0.1",
     "esbuild": "0.14.47",
     "esbuild-register": "3.3.3",
+    "esbuild-runner": "2.2.1",
     "husky": "8.0.1",
     "lint-staged": "13.0.3",
-    "nanoid": "4.0.0",
+    "nanoid": "3.2.0",
     "pg": "8.7.3",
     "prettier": "2.7.1",
     "semantic-release": "19.0.3",
@@ -47,7 +48,8 @@
     "update-typings": "ava src/tests/fixtures/update-typings.ts",
     "format": "prettier -w .",
     "format:check": "prettier --check .",
-    "build": "tsup ./src/index.ts --dts --sourcemap "
+    "build": "tsup ./src/index.ts --dts --sourcemap",
+    "psql": "esr src/scripts/get-terminal-to-test-database.ts"
   },
   "peerDependencies": {
     "zapatos": "^6.0.1"
