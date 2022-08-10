@@ -255,11 +255,47 @@ test(
 )
 
 test(
+  "forUpdate().noWait()",
+  macro,
+  (builder) => builder.first().forUpdate("film").noWait(),
+  (t, _, query) => {
+    t.true(query.text.includes("FOR UPDATE") && query.text.includes("NOWAIT"))
+  }
+)
+
+test(
+  "forUpdate().skipLocked()",
+  macro,
+  (builder) => builder.first().forUpdate("film").skipLocked(),
+  (t, _, query) => {
+    t.true(query.text.includes("SKIP LOCKED"))
+  }
+)
+
+test(
   "forNoKeyUpdate()",
   macro,
   (builder) => builder.first().forNoKeyUpdate("film"),
   (t, _, query) => {
     t.true(query.text.includes("FOR NO KEY UPDATE"))
+  }
+)
+
+test(
+  "forNoKeyUpdate().noWait()",
+  macro,
+  (builder) => builder.first().forNoKeyUpdate("film").noWait(),
+  (t, _, query) => {
+    t.true(query.text.includes("NOWAIT"))
+  }
+)
+
+test(
+  "forNoKeyUpdate().skipLocked()",
+  macro,
+  (builder) => builder.first().forNoKeyUpdate("film").skipLocked(),
+  (t, _, query) => {
+    t.true(query.text.includes("SKIP LOCKED"))
   }
 )
 
@@ -273,10 +309,46 @@ test(
 )
 
 test(
+  "forShare().noWait()",
+  macro,
+  (builder) => builder.first().forShare("film").noWait(),
+  (t, _, query) => {
+    t.true(query.text.includes("NOWAIT"))
+  }
+)
+
+test(
+  "forShare().skipLocked()",
+  macro,
+  (builder) => builder.first().forShare("film").skipLocked(),
+  (t, _, query) => {
+    t.true(query.text.includes("SKIP LOCKED"))
+  }
+)
+
+test(
   "forKeyShare()",
   macro,
   (builder) => builder.first().forKeyShare("film"),
   (t, _, query) => {
     t.true(query.text.includes("FOR KEY SHARE"))
+  }
+)
+
+test(
+  "forKeyShare().noWait()",
+  macro,
+  (builder) => builder.first().forKeyShare("film").noWait(),
+  (t, _, query) => {
+    t.true(query.text.includes("NOWAIT"))
+  }
+)
+
+test(
+  "forKeyShare().skipLocked()",
+  macro,
+  (builder) => builder.first().forKeyShare("film").skipLocked(),
+  (t, _, query) => {
+    t.true(query.text.includes("SKIP LOCKED"))
   }
 )
