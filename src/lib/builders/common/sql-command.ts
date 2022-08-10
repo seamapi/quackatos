@@ -8,17 +8,12 @@ export abstract class SQLCommand<Result> {
 
   async run(pool: Pool): Promise<Result> {
     const query = this.compile()
+    const result = await pool.query(query)
 
-    try {
-      const result = await pool.query(query)
-      if (this.transformResult) {
-        return this.transformResult(result) as any
-      }
-
-      return result.rows as any
-    } catch (error) {
-      console.error("original query", query)
-      throw error
+    if (this.transformResult) {
+      return this.transformResult(result) as any
     }
+
+    return result.rows as any
   }
 }
