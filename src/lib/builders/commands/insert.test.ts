@@ -180,7 +180,10 @@ test("onConflict().doUpdateSet() (fails because wrong target)", async (t) => {
     .onConflict(["first_name"])
     .doUpdateSet()
 
-  await t.throwsAsync(async () => await query.run(pool))
+  await t.throwsAsync(async () => await query.run(pool), {
+    message:
+      "there is no unique or exclusion constraint matching the ON CONFLICT specification",
+  })
 })
 
 test("onConflict().doNothing()", async (t) => {
@@ -205,7 +208,6 @@ test("onConflict().doNothing()", async (t) => {
   t.not(actor.last_name, "bar")
 })
 
-// todo: add similar test for doNothing()
 test("onConflict().doUpdateSet().where()", async (t) => {
   const { pool } = await getTestDatabase()
 
@@ -251,20 +253,4 @@ test("onConflict().doNothing().where()", async (t) => {
     .whereIn("actor_id", [1])
 
   await t.notThrowsAsync(async () => await query.run(pool))
-})
-
-test("onConflict().doNothing().where() (fails if where clause doesn't match)", async (t) => {
-  const { pool } = await getTestDatabase()
-
-  const query = new InsertCommand("actor")
-    .values({
-      actor_id: 1,
-      first_name: "foo",
-      last_name: "bar",
-    })
-    .onConflict(["actor_id"])
-    .doNothing()
-    .whereIn("actor.actor_id", [2])
-
-  await t.throwsAsync(async () => await query.run(pool))
 })
