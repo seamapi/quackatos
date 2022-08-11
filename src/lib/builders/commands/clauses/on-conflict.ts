@@ -12,7 +12,7 @@ import {
   ColumnSpecificationsForTable,
   mapWithSeparator,
 } from "~/lib/builders/utils"
-import { WhereableStatement } from "~/lib/builders/common"
+import { WhereableStatement } from "./where"
 
 interface OnConflictSpecForTable<T extends schema.Table> {
   target: ColumnSpecificationsForTable<T>[] | Constraint<T>

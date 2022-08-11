@@ -1,4 +1,4 @@
-import { WhereableStatement } from "../common/where"
+import { WhereableStatement } from "./clauses/where"
 import { sql, param, SQLFragment, raw } from "zapatos/db"
 import * as schema from "zapatos/schema"
 import { mix } from "ts-mixer"

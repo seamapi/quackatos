@@ -1,7 +1,7 @@
 import { mix } from "ts-mixer"
 import { sql } from "zapatos/db"
 import * as schema from "zapatos/schema"
-import { WhereableStatement } from "../common"
+import { WhereableStatement } from "./clauses"
 import { SQLCommand } from "../common/sql-command"
 
 export interface DeleteCommand<

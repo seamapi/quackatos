@@ -4,7 +4,7 @@ import { mapWithSeparator } from "~/lib/builders/utils/map-with-separator"
 import {
   ColumnSpecificationsForTable,
   ColumnSpecificationValue,
-} from "../utils"
+} from "../../utils"
 
 type WhereableConditions<W extends Whereable> = Array<{
   bool: "AND" | "OR"
