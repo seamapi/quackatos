@@ -1,8 +1,9 @@
 {
   "name": "quackatos",
   "version": "1.5.0",
-  "description": "🦆 a query builder for Zapatos",
+  "description": "a query builder for Postgres",
   "keywords": [
+    "🦆",
     "query",
     "builder",
     "zapatos",
