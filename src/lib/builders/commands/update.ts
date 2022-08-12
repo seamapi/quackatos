@@ -1,7 +1,7 @@
 import { cols, sql, vals } from "zapatos/db"
 import * as schema from "zapatos/schema"
 import { mix } from "ts-mixer"
-import { WhereableStatement } from "../common/where"
+import { WhereableStatement } from "./clauses/where"
 import { SQLCommand } from "../common/sql-command"
 import {
   ColumnSpecificationsForTableWithWildcards,

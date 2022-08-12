@@ -4,19 +4,19 @@ import { mapWithSeparator } from "~/lib/builders/utils/map-with-separator"
 import {
   ColumnSpecificationsForTable,
   ColumnSpecificationValue,
-} from "../utils"
+} from "../../utils"
 
-type WhereableConditions<W extends Whereable> = Array<{
+type WhereableCondition<W extends Whereable> = {
   bool: "AND" | "OR"
   where?: W | SQLFragment | AllType
-  nested?: WhereableConditions<W>
-}>
+  nested?: WhereableCondition<W>
+}
 
 export class WhereableStatement<
   TableName extends Table,
   W extends Whereable = WhereableForTable<TableName>
 > {
-  protected _whereable: WhereableConditions<W> = []
+  protected _whereable: WhereableCondition<W>[] = []
 
   whereIn<ColumnName extends ColumnSpecificationsForTable<TableName>>(
     columnName: ColumnName,
@@ -32,27 +32,39 @@ export class WhereableStatement<
     return this
   }
 
+  where<ColumnName extends ColumnSpecificationsForTable<TableName>>(
+    columnName: ColumnName,
+    value: ColumnSpecificationValue<TableName, ColumnName>
+  ): this
+  where(selector: W): this
   where(
-    args:
-      | ((
-          builder: WhereableStatement<TableName>
-        ) => WhereableStatement<TableName>)
-      | WhereableConditions<W>[number]["where"]
-      | WhereableConditions<W>[number]
-  ): this {
-    const builder = new WhereableStatement<TableName>()
-
-    if (typeof args == "function") {
-      const configured = args(builder)
-      return this.mergeIntoThis(configured._whereable)
-    } else if (args === all) {
-      this._whereable.push({ bool: "AND", where: args })
+    callback: (
+      builder: WhereableStatement<TableName>
+    ) => WhereableStatement<TableName>
+  ): this
+  where(args: WhereableCondition<W>[]): this
+  where(...args: any): this {
+    if (args.length === 1) {
+      const arg = args[0]
+      if (typeof arg == "function") {
+        const configured = arg(new WhereableStatement<TableName>())
+        return this.mergeIntoThis(configured._whereable)
+      } else if (arg === all) {
+        this._whereable.push({ bool: "AND", where: arg })
+        return this
+      } else if (Array.isArray(arg)) {
+        return this.mergeIntoThis(arg)
+      }
+    } else if (args.length === 2) {
+      const [columnName, value] = args
+      this._whereable.push({
+        bool: "AND",
+        where: { [columnName]: value } as any,
+      })
       return this
-    } else if (Array.isArray(args)) {
-      return this.mergeIntoThis(args)
     }
 
-    this._whereable.push({ bool: "AND", where: args as any })
+    this._whereable.push({ bool: "AND", where: args })
     return this
   }
 
@@ -74,7 +86,7 @@ export class WhereableStatement<
     return this.compileWhereable().compile().text.length === 0
   }
 
-  private mergeIntoThis(whereable: WhereableConditions<any>): this {
+  private mergeIntoThis(whereable: WhereableCondition<any>[]): this {
     this._whereable = [...this._whereable, ...whereable]
     return this
   }
