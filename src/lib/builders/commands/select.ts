@@ -225,7 +225,7 @@ export class SelectCommand<
     return this
   }
 
-  first(): SelectCommand<TableName, Selectable, "SINGLE"> {
+  $first(): SelectCommand<TableName, Selectable, "SINGLE"> {
     this._resultMode = "SINGLE"
     return this.limit(1) as any
   }
