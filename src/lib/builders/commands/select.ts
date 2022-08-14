@@ -16,6 +16,7 @@ import { QueryResult } from "pg"
 import { UpdateCommand } from "./update"
 import { DeleteCommand } from "./delete"
 import { LockClauseBuilder } from "./clauses/locks"
+import { InsertCommand } from "./insert"
 
 interface OrderSpecForTable<T extends schema.Table> {
   by: ColumnSpecificationsForTable<T>
@@ -232,6 +233,10 @@ export class SelectCommand<
 
   delete() {
     return new DeleteCommand<TableName>(this._tableName).where(this._whereable)
+  }
+
+  insert() {
+    return new InsertCommand<TableName>(this._tableName).where(this._whereable)
   }
 
   update() {
