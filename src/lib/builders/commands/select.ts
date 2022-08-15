@@ -235,12 +235,33 @@ export class SelectCommand<
     return new DeleteCommand<TableName>(this._tableName).where(this._whereable)
   }
 
-  insert() {
-    return new InsertCommand<TableName>(this._tableName).where(this._whereable)
+  insert(
+    ...rows: Array<schema.InsertableForTable<TableName>>
+  ): InsertCommand<TableName>
+  insert(
+    rows: Array<schema.InsertableForTable<TableName>>[]
+  ): InsertCommand<TableName>
+  insert(...args: any[]) {
+    return new InsertCommand<TableName>(this._tableName)
+      .where(this._whereable)
+      .values(...args)
   }
 
-  update() {
-    return new UpdateCommand<TableName>(this._tableName).where(this._whereable)
+  update<T extends keyof schema.UpdatableForTable<TableName>>(
+    columnName: T,
+    value: schema.UpdatableForTable<TableName>[T]
+  ): UpdateCommand<TableName>
+  update(
+    values: Partial<schema.UpdatableForTable<TableName>>
+  ): UpdateCommand<TableName>
+  update(...args: any[]): UpdateCommand<TableName> {
+    let command = new UpdateCommand<TableName>(this._tableName).where(
+      this._whereable
+    )
+    if (args.length > 0) {
+      command = (command as any).set(...args)
+    }
+    return command
   }
 
   compile() {
