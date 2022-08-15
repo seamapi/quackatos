@@ -23,7 +23,7 @@ test("insert works", async (t) => {
     )
     .run(pool)
 
-  assert<Equals<typeof result, never[]>>()
+  assert<Equals<typeof result, {}[]>>()
 
   const {
     rows: [{ count: countAfterInsert }],
@@ -266,6 +266,9 @@ test(".returning()", async (t) => {
     .returning("first_name")
 
   const result = await query.run(pool)
+
+  assert<Equals<typeof result[0], { first_name: string }>>()
+
   t.is(result.length, 1)
   t.deepEqual(result[0], {
     first_name: "foo",

@@ -16,7 +16,7 @@ export interface InsertCommand<
     TableName,
     schema.SelectableForTable<TableName>
   >,
-  Returning = never
+  Returning = {}
 > extends OnConflictClauseBuilder<TableName>,
     SQLCommand<Returning[]> {}
 
@@ -27,7 +27,7 @@ export class InsertCommand<
     TableName,
     schema.SelectableForTable<TableName>
   >,
-  Returning = never
+  Returning = {}
 > {
   private readonly _tableName: string
   private _rows: Array<schema.InsertableForTable<TableName>> = []

@@ -23,16 +23,16 @@ test("insert()", async (t) => {
     .returning("*")
 
   const result = await query.run(pool)
+  const { last_update, ...resultWithoutLastUpdate } = result[0]
 
-  t.snapshot(result)
+  t.snapshot(resultWithoutLastUpdate)
 })
 
 test("update()", async (t) => {
   const { pool } = await getTestDatabase()
   const query = new QueryBuilder("film")
     .whereIn("film_id", [1, 2])
-    .update()
-    .set("description", "foo bar")
+    .update("description", "foo bar")
     .returning(["film_id", "description"])
   const result = await query.run(pool)
 
