@@ -235,8 +235,16 @@ export class SelectCommand<
     return new DeleteCommand<TableName>(this._tableName).where(this._whereable)
   }
 
-  insert() {
-    return new InsertCommand<TableName>(this._tableName).where(this._whereable)
+  insert(
+    ...rows: Array<schema.InsertableForTable<TableName>>
+  ): InsertCommand<TableName>
+  insert(
+    rows: Array<schema.InsertableForTable<TableName>>[]
+  ): InsertCommand<TableName>
+  insert(...args: any[]) {
+    return new InsertCommand<TableName>(this._tableName)
+      .where(this._whereable)
+      .values(...args)
   }
 
   update() {

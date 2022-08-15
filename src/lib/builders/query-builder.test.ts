@@ -10,6 +10,23 @@ test("select()", async (t) => {
   t.snapshot(result)
 })
 
+test("insert()", async (t) => {
+  const { pool } = await getTestDatabase()
+  const query = new QueryBuilder("film")
+    .whereIn("film_id", [1, 2])
+    .insert({
+      title: "Test",
+      language_id: 1,
+      description: "foo bar",
+      fulltext: "foo bar",
+    })
+    .returning("*")
+
+  const result = await query.run(pool)
+
+  t.snapshot(result)
+})
+
 test("update()", async (t) => {
   const { pool } = await getTestDatabase()
   const query = new QueryBuilder("film")

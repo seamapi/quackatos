@@ -23,7 +23,7 @@ test("insert works", async (t) => {
     )
     .run(pool)
 
-  assert<Equals<typeof result, never>>()
+  assert<Equals<typeof result, never[]>>()
 
   const {
     rows: [{ count: countAfterInsert }],
@@ -253,4 +253,39 @@ test("onConflict().doNothing().where()", async (t) => {
     .whereIn("actor_id", [1])
 
   await t.notThrowsAsync(async () => await query.run(pool))
+})
+
+test(".returning()", async (t) => {
+  const { pool } = await getTestDatabase()
+
+  const query = new InsertCommand("actor")
+    .values({
+      first_name: "foo",
+      last_name: "bar",
+    })
+    .returning("first_name")
+
+  const result = await query.run(pool)
+  t.is(result.length, 1)
+  t.deepEqual(result[0], {
+    first_name: "foo",
+  })
+})
+
+test(".returning() (array, wildcard)", async (t) => {
+  const { pool } = await getTestDatabase()
+
+  const query = new InsertCommand("actor")
+    .values({
+      first_name: "foo",
+      last_name: "bar",
+    })
+    .returning(["actor.*"])
+
+  const result = await query.run(pool)
+  t.is(result.length, 1)
+  t.like(result[0], {
+    first_name: "foo",
+    last_name: "bar",
+  })
 })
