@@ -32,7 +32,7 @@
     "esbuild-runner": "2.2.1",
     "husky": "8.0.1",
     "lint-staged": "13.0.3",
-    "nanoid": "3.2.0",
+    "nanoid": "3.3.8",
     "ora": "5.4.1",
     "pg": "8.7.3",
     "prettier": "2.7.1",
