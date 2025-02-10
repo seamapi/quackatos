@@ -27,7 +27,7 @@
     "@types/pg": "8.6.5",
     "ava": "4.3.0",
     "ava-typescript-worker": "1.0.1",
-    "esbuild": "0.14.47",
+    "esbuild": "0.25.0",
     "esbuild-register": "3.3.3",
     "esbuild-runner": "2.2.1",
     "husky": "8.0.1",
